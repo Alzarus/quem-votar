@@ -56,6 +56,7 @@ Em consonancia com as diretrizes de desenvolvimento orientado a agentes de intel
 | **Contratos e Schemas** | [`docs/api-contracts.md`](docs/api-contracts.md) | Mapeamento exaustivo de todos os endpoints do TSE, codigos de cargo (1 a 13), enums de/para e entidades Dart. |
 | **Design System e Acessibilidade** | [`docs/design-system.md`](docs/design-system.md) | Tokens, WCAG 2.1 AA (contraste 4,5:1, alvo de toque 48x48dp, textScaler, semantica) e responsividade. |
 | **Convencoes de Codigo** | [`docs/convencoes-codigo.md`](docs/convencoes-codigo.md) | Regras estritas de codificacao Dart/Flutter, arquitetura de camadas, testes unitarios e harness de validacao. |
+| **Infraestrutura e Deploy** | [`docs/infraestrutura-web.md`](docs/infraestrutura-web.md) | Topologia de hospedagem VM Contabo, SNI multidominio, Nginx, SSL Let's Encrypt e deploy Flutter Web. |
 
 ---
 
@@ -71,7 +72,8 @@ docs/
 ├── arquitetura.md            # Arquitetura tecnica Flutter, persistencia e resiliencia
 ├── api-contracts.md          # Especificacao de endpoints, schemas do TSE e entidades
 ├── design-system.md          # Tokens visuais, WCAG 2.1 AA e responsividade adaptativa
-└── convencoes-codigo.md      # Convencoes Dart/Flutter baseadas no padrao Fabio Akita
+├── convencoes-codigo.md      # Convencoes Dart/Flutter baseadas no padrao Fabio Akita
+└── infraestrutura-web.md     # Roteamento Nginx, deploy VM Contabo e Flutter Web subpath
 lib/
 ├── core/                     # Constantes, configuracoes de rede, tipos Result e falhas
 │   ├── network/              # Cliente Dio com interceptor para cabecalhos Akamai
