@@ -3,8 +3,9 @@
 ## Projeto: Plataforma de Transparencia Civica e Acompanhamento Eleitoral
 **Documento:** ARQ-001  
 **Classificacao:** Especificacao Arquitetural e Seguranca de Sistemas  
-**Revisao:** 2.0.0  
-**Data:** 11 de setembro de 2026  
+**Revisao:** 2.1.0  
+**Data:** 12 de setembro de 2026  
+**Nota de Revisao:** Schema Drift expandido conforme decisoes D03 (tabela unica) e D04 (auto-referencia para vices). Tabela `elections_cargos` adicionada. `idEleicao` 2026 corrigido para `20322002026`.  
 
 ---
 
@@ -106,59 +107,95 @@ O banco de dados relacional local garante indexacao rapida, buscas textuais comp
 ### 3.1 Esquema de Tabelas Principais
 
 ```
-+-------------------------------------------------------------------------------+
-|                             TABELA: elections                                 |
-|-------------------------------------------------------------------------------|
-| id (INTEGER, PK)       | Identificador operacional no TSE (ex: 2045202026)    |
-| ano (INTEGER)          | Ano do pleito (ex: 2026)                             |
-| descricao (TEXT)       | Descricao oficial (ex: "Eleicoes Gerais 2026")       |
-| tipo (TEXT)            | "ORDINARIA" ou "SUPLEMENTAR"                         |
-| abrangencia (TEXT)     | "FEDERAL", "ESTADUAL" ou "MUNICIPAL"                 |
-+-------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+|                             TABELA: elections                                      |
+|------------------------------------------------------------------------------------|
+| id (INTEGER, PK)        | Identificador no TSE (ex: 20322002026)                    |
+| ano (INTEGER)           | Ano do pleito (ex: 2026)                                  |
+| nome (TEXT)             | Nome da eleicao (ex: "Eleicao Geral Federal 2026")        |
+| descricao (TEXT)        | Descricao oficial completa                                |
+| tipo (TEXT)             | "Ordinaria" ou "Suplementar"                              |
+| abrangencia (TEXT)      | "F" (Federal), "E" (Estadual) ou "M" (Municipal)          |
+| turno (INTEGER)         | Turno do pleito (1 ou 2)                                  |
+| data_eleicao (TEXT)     | Data do pleito no formato dd/MM/yyyy                      |
+| situacao (TEXT)         | Descricao da situacao da eleicao                          |
++------------------------------------------------------------------------------------+
 
-+-------------------------------------------------------------------------------+
-|                             TABELA: candidates                                |
-|-------------------------------------------------------------------------------|
-| id (INTEGER, PK)       | Identificador sequencial do candidato no TSE         |
-| election_id (INTEGER)  | FK -> elections.id                                   |
-| state_code (TEXT)      | Sigla UF ("BA", "SP", "BR", etc.)                    |
-| city_code (INTEGER)    | Codigo TSE do municipio (nulo para cargos estaduais) |
-| role_code (INTEGER)    | Codigo oficial do cargo (1 a 13)                     |
-| ballot_number (INTEGER)| Numero de urna (ex: 4012)                            |
-| ballot_name (TEXT)     | Nome de urna formatado                               |
-| full_name (TEXT)       | Nome completo de registro civil                      |
-| party_number (INTEGER) | Numero da legenda partidaria                         |
-| party_acronym (TEXT)   | Sigla do partido (ex: "PSB")                         |
-| party_name (TEXT)      | Nome oficial da agremiação partidaria                |
-| coalition_name (TEXT)  | Nome da coligacao ou federacao partidaria            |
-| coalition_comp (TEXT)  | Composicao partidaria formal                         |
-| status (TEXT)          | Status normalizado (ex: "DEFERRED", "INELIGIBLE")    |
-| total_assets (REAL)    | Total declarado em reais com precisao centesimal     |
-| photo_url (TEXT)       | URL oficial da fotografia no TSE                     |
-| local_photo_path (TEXT)| Caminho do arquivo da foto em cache local no disco   |
-+-------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+|                          TABELA: elections_cargos                                  |
+|------------------------------------------------------------------------------------|
+| id (INTEGER, PK, AUTO)  | Identificador sintetico local                             |
+| election_id (INTEGER)   | FK -> elections.id                                        |
+| state_code (TEXT)       | Sigla UF ou "BR"                                          |
+| cargo_code (INTEGER)    | Codigo oficial do cargo (1 a 13)                          |
+| cargo_sigla (TEXT)      | Sigla do cargo (ex: "P", "GE", "S")                       |
+| cargo_nome (TEXT)       | Nome completo do cargo                                    |
+| titular (INTEGER)       | Flag booleano (0 ou 1) indicando se e cargo titular       |
+| contagem (INTEGER)      | Total de candidatos registrados para este cargo            |
++------------------------------------------------------------------------------------+
 
-+-------------------------------------------------------------------------------+
-|                          TABELA: candidate_assets                             |
-|-------------------------------------------------------------------------------|
-| id (INTEGER, PK, AUTO) | Identificador sintetico local                        |
-| candidate_id (INTEGER) | FK -> candidates.id                                  |
-| order_index (INTEGER)  | Ordem de apresentacao informada                      |
-| category (TEXT)        | Classificacao do bem (imovel, veiculo, investimento) |
-| description (TEXT)     | Descricao discriminada do item                       |
-| amount (REAL)          | Valor venal declarado                                |
-| updated_at (TEXT)      | Data de atualizacao no sistema eleitoral             |
-+-------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+|                             TABELA: candidates                                     |
+|------------------------------------------------------------------------------------|
+| -- Campos de listagem (CandidateSummary) --                                        |
+| id (INTEGER, PK)        | Identificador sequencial do candidato no TSE              |
+| election_id (INTEGER)   | FK -> elections.id                                        |
+| state_code (TEXT)       | Sigla UF ("BA", "SP", "BR", etc.)                         |
+| city_code (INTEGER?)    | Codigo TSE do municipio (nulo para cargos estaduais)      |
+| role_code (INTEGER)     | Codigo oficial do cargo (1 a 13)                          |
+| role_description (TEXT) | Nome completo do cargo                                    |
+| ballot_number (INTEGER) | Numero de urna (ex: 4012)                                 |
+| ballot_name (TEXT)      | Nome de urna formatado                                    |
+| full_name (TEXT)        | Nome completo de registro civil                           |
+| party_number (INTEGER)  | Numero da legenda partidaria                              |
+| party_acronym (TEXT)    | Sigla do partido (ex: "PSB")                              |
+| party_name (TEXT)       | Nome oficial da agremiacao partidaria                     |
+| coalition_name (TEXT)   | Nome da coligacao ou federacao partidaria                 |
+| coalition_comp (TEXT)   | Composicao partidaria formal                              |
+| status (TEXT)           | Status normalizado (ex: "DEFERRED", "INELIGIBLE")         |
+| raw_status (TEXT)       | Texto original do TSE (ex: "DEFERIDO COM RECURSO")        |
+| total_assets (REAL)     | Total declarado em reais com precisao centesimal          |
+| photo_url (TEXT)        | URL oficial da fotografia no TSE (alta resolucao)         |
+| local_photo_path (TEXT?)| Caminho do arquivo da foto em cache local no disco        |
+| parent_candidate_id (INTEGER?) | FK -> candidates.id (auto-referencia para vices)   |
+| -- Campos de detalhe (CandidateDetail) - nullable ate consulta individual --       |
+| birth_date (TEXT?)      | Data de nascimento no formato dd/MM/yyyy                  |
+| gender (TEXT?)          | Genero declarado (ex: "MASCULINO")                        |
+| color_race (TEXT?)      | Autodeclaracao de cor/raca                                |
+| marital_status (TEXT?)  | Estado civil (ex: "CASADO(A)")                            |
+| education_level (TEXT?) | Grau de instrucao (ex: "SUPERIOR COMPLETO")               |
+| occupation (TEXT?)      | Profissao declarada                                       |
+| nationality (TEXT?)     | Nacionalidade                                             |
+| birth_city (TEXT?)      | Municipio de nascimento                                   |
+| birth_state (TEXT?)     | UF de nascimento                                          |
+| max_expense_1t (REAL?)  | Limite legal de gastos do 1. turno                        |
+| max_expense_2t (REAL?)  | Limite legal de gastos do 2. turno                        |
+| proposal_doc_url (TEXT?)| URL da proposta de governo (montada via idArquivo)        |
+| campaign_cnpj (TEXT?)   | CNPJ da campanha eleitoral                                |
+| detail_fetched (INTEGER)| Flag (0/1) indicando se o detalhe ja foi baixado          |
++------------------------------------------------------------------------------------+
 
-+-------------------------------------------------------------------------------+
-|                          TABELA: cache_metadata                               |
-|-------------------------------------------------------------------------------|
-| cache_key (TEXT, PK)   | Chave concatenada da consulta                        |
-| last_fetched_at (TEXT) | Carimbo ISO-8601 da ultima comunicacao valida        |
-| payload_hash (TEXT)    | Hash SHA-256 do corpo de resposta                    |
-| etag (TEXT)            | Valor de ETag fornecido pelo servidor governamental  |
-| item_count (INTEGER)   | Total de registros retornados na consulta            |
-+-------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+|                          TABELA: candidate_assets                                  |
+|------------------------------------------------------------------------------------|
+| id (INTEGER, PK, AUTO)  | Identificador sintetico local                             |
+| candidate_id (INTEGER)  | FK -> candidates.id                                       |
+| order_index (INTEGER)   | Ordem de apresentacao informada pelo TSE                  |
+| category (TEXT)         | Classificacao (campo `descricaoDeTipoDeBem` do TSE)       |
+| description (TEXT)      | Descricao discriminada do item                            |
+| amount (REAL)           | Valor venal declarado (convertido de String no JSON)      |
+| updated_at (TEXT)       | Data de atualizacao no sistema eleitoral                  |
++------------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------------+
+|                          TABELA: cache_metadata                                    |
+|------------------------------------------------------------------------------------|
+| cache_key (TEXT, PK)    | Chave concatenada: {ano}_{uf}_{idEleicao}_{codigoCargo}  |
+| last_fetched_at (TEXT)  | Carimbo ISO-8601 da ultima comunicacao valida             |
+| payload_hash (TEXT)     | Hash SHA-256 do corpo de resposta                         |
+| etag (TEXT?)            | Valor de ETag fornecido pelo servidor governamental       |
+| item_count (INTEGER)    | Total de registros retornados na consulta                 |
++------------------------------------------------------------------------------------+
 ```
 
 ### 3.2 Estrategia de Indices de Performance
@@ -168,6 +205,8 @@ Para assegurar tempos de recuperacao inferiores a 50 milissegundos mesmo com dez
 2. `idx_candidates_party`: Indice sobre `(election_id, party_number)`.
 3. `idx_candidates_search`: Indice textual sobre `(ballot_name, full_name, ballot_number)`.
 4. `idx_assets_candidate`: Indice sobre `(candidate_id, amount DESC)`.
+5. `idx_candidates_parent`: Indice sobre `(parent_candidate_id)` para consulta de vices/suplentes.
+6. `idx_cargos_query`: Indice composto sobre `(election_id, state_code)` na tabela `elections_cargos`.
 
 ---
 
