@@ -31,11 +31,11 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T0.1   | Inicializacao do projeto Flutter 3.41+ multiplataforma      | [PENDENTE]     |
-| T0.2   | Configuracao de dependencias em pubspec.yaml                | [PENDENTE]     |
-| T0.3   | Configuracao de linter estrito em analysis_options.yaml     | [PENDENTE]     |
-| T0.4   | Criacao da arvore canonica de diretorios (lib/ e test/)     | [PENDENTE]     |
-| T0.5   | Extracao e catalogacao das fixtures JSON em test/fixtures/  | [PENDENTE]     |
+| T0.1   | Inicializacao do projeto Flutter 3.41+ multiplataforma      | [CONCLUIDO]    |
+| T0.2   | Configuracao de dependencias em pubspec.yaml                | [CONCLUIDO]    |
+| T0.3   | Configuracao de linter estrito em analysis_options.yaml     | [CONCLUIDO]    |
+| T0.4   | Criacao da arvore canonica de diretorios (lib/ e test/)     | [CONCLUIDO]    |
+| T0.5   | Extracao e catalogacao das fixtures JSON em test/fixtures/  | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+

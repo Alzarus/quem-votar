@@ -1,0 +1,26 @@
+{
+  "unidadeEleitoralDTO": {
+    "codigo": "BR",
+    "sigla": "BR",
+    "nome": "BRASIL",
+    "tipo": "F"
+  },
+  "cargos": [
+    {
+      "codigo": 1,
+      "sigla": "P",
+      "nome": "Presidente",
+      "codSuperior": 0,
+      "titular": true,
+      "contagem": 2
+    },
+    {
+      "codigo": 2,
+      "sigla": "VP",
+      "nome": "Vice-Presidente",
+      "codSuperior": 1,
+      "titular": false,
+      "contagem": 2
+    }
+  ]
+}

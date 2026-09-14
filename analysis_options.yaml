@@ -1,0 +1,39 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    missing_required_param: error
+    missing_return: error
+    todo: ignore
+
+linter:
+  rules:
+    # Regras estritas de tipagem e integridade (Clean Code para Agentes de IA)
+    avoid_dynamic_calls: true
+    always_declare_return_types: true
+    unawaited_futures: true
+    cancel_subscriptions: true
+    close_sinks: true
+
+    # Imutabilidade e Performance
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+
+    # Qualidade e Padronizacao Estrutural
+    avoid_empty_else: true
+    avoid_relative_lib_imports: true
+    directives_ordering: true
+    prefer_single_quotes: true
+    unnecessary_const: true
+    unnecessary_new: true
+    unnecessary_null_aware_assignments: true
+    unnecessary_nullable_for_final_variable_declarations: true
+    use_build_context_synchronously: true

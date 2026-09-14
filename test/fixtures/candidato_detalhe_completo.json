@@ -1,0 +1,76 @@
+{
+  "id": 280001612393,
+  "nomeUrna": "CIRO GOMES",
+  "numero": 12,
+  "nomeCompleto": "CIRO FERREIRA GOMES",
+  "descricaoSexo": "MASC.",
+  "dataDeNascimento": "1957-11-06",
+  "descricaoEstadoCivil": "Divorciado(a)",
+  "descricaoCorRaca": "BRANCA",
+  "descricaoSituacao": "Deferido",
+  "nacionalidade": "Brasileira nata",
+  "grauInstrucao": "Superior completo",
+  "ocupacao": "Advogado",
+  "gastoCampanha1T": 88944030.80,
+  "gastoCampanha2T": 44472015.40,
+  "totalDeBens": 3039761.97,
+  "fotoUrl": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/280001612393/BR",
+  "candidatoApto": true,
+  "st_REELEICAO": false,
+  "sgUfNascimento": "SP",
+  "nomeMunicipioNascimento": "PINDAMONHANGABA",
+  "nomeColigacao": "PDT",
+  "cargo": {
+    "codigo": 1,
+    "sigla": null,
+    "nome": "Presidente",
+    "codSuperior": 0,
+    "titular": true,
+    "contagem": 2
+  },
+  "partido": {
+    "numero": 12,
+    "sigla": "PDT",
+    "nome": "Partido Democratico Trabalhista"
+  },
+  "bens": [
+    {
+      "ordem": 1,
+      "descricaoDeTipoDeBem": "Apartamento",
+      "descricao": "APARTAMENTO 1002 DO EMPREENDIMENTO MAR DE PAULET RESIDENCIAL",
+      "valor": 687091.02,
+      "dataUltimaAtualizacao": "2022-08-26"
+    },
+    {
+      "ordem": 2,
+      "descricaoDeTipoDeBem": "Veiculo automotor terrestre",
+      "descricao": "AUTOMOVEL TOYOTA COROLLA ANO 2020",
+      "valor": 105000.00,
+      "dataUltimaAtualizacao": "2022-08-26"
+    }
+  ],
+  "vices": [
+    {
+      "sq_CANDIDATO": 280001612392,
+      "sq_CANDIDATO_SUPERIOR": 280001612393,
+      "nr_CANDIDATO": "12",
+      "nm_URNA": "ANA PAULA MATOS",
+      "nm_CANDIDATO": "ANA PAULA ANDRADE MATOS MOREIRA",
+      "ds_CARGO": "Vice-presidente",
+      "nm_PARTIDO": "Partido Democratico Trabalhista",
+      "sg_PARTIDO": "PDT",
+      "urlFoto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/280001612392/BR",
+      "candidatoApto": true
+    }
+  ],
+  "arquivos": [
+    {
+      "idArquivo": 280010929672,
+      "nome": "proposta_de_governo_2026.pdf",
+      "url": "candidaturas/oficial/2026/BR/BR/280001612393/",
+      "tipo": "pdf",
+      "codTipo": "5"
+    }
+  ],
+  "eleicoesAnteriores": []
+}

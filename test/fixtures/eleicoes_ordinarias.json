@@ -1,0 +1,29 @@
+[
+  {
+    "id": 20322002026,
+    "ano": 2026,
+    "nomeEleicao": "Eleição Geral Federal 2026",
+    "tipoEleicao": "O",
+    "tipoAbrangencia": "F",
+    "dataEleicao": "2026-10-04",
+    "descricaoEleicao": "2026"
+  },
+  {
+    "id": 2045202024,
+    "ano": 2024,
+    "nomeEleicao": "Eleições Municipais 2024",
+    "tipoEleicao": "O",
+    "tipoAbrangencia": "M",
+    "dataEleicao": "2024-10-06",
+    "descricaoEleicao": "2024"
+  },
+  {
+    "id": 2040602022,
+    "ano": 2022,
+    "nomeEleicao": "Eleição Geral Federal 2022",
+    "tipoEleicao": "O",
+    "tipoAbrangencia": "F",
+    "dataEleicao": "2022-10-02",
+    "descricaoEleicao": "2022"
+  }
+]

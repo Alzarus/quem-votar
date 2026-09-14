@@ -1,0 +1,66 @@
+{
+  "unidadeEleitoral": {
+    "sigla": "BR",
+    "nome": "BRASIL"
+  },
+  "cargo": {
+    "codigo": 1,
+    "sigla": null,
+    "nome": "Presidente",
+    "codSuperior": 0,
+    "titular": true,
+    "contagem": 2
+  },
+  "candidatos": [
+    {
+      "id": 280001612393,
+      "numero": 12,
+      "nomeUrna": "CIRO GOMES",
+      "nomeCompleto": "CIRO FERREIRA GOMES",
+      "descricaoSituacao": "Deferido",
+      "candidatoApto": true,
+      "st_REELEICAO": false,
+      "nomeColigacao": "PDT",
+      "cargo": {
+        "codigo": 1,
+        "sigla": null,
+        "nome": "Presidente",
+        "codSuperior": 0,
+        "titular": true,
+        "contagem": 2
+      },
+      "partido": {
+        "numero": 12,
+        "sigla": "PDT",
+        "nome": null
+      },
+      "totalDeBens": null,
+      "fotoUrl": null
+    },
+    {
+      "id": 280001607829,
+      "numero": 13,
+      "nomeUrna": "LULA",
+      "nomeCompleto": "LUIZ INACIO LULA DA SILVA",
+      "descricaoSituacao": "Deferido",
+      "candidatoApto": true,
+      "st_REELEICAO": true,
+      "nomeColigacao": "FEDERACAO BRASIL DA ESPERANCA - FE BRASIL (PT/PC do B/PV)",
+      "cargo": {
+        "codigo": 1,
+        "sigla": null,
+        "nome": "Presidente",
+        "codSuperior": 0,
+        "titular": true,
+        "contagem": 2
+      },
+      "partido": {
+        "numero": 13,
+        "sigla": "PT",
+        "nome": null
+      },
+      "totalDeBens": null,
+      "fotoUrl": null
+    }
+  ]
+}
