@@ -67,7 +67,8 @@ Em consonancia com as diretrizes de desenvolvimento orientado a agentes de intel
 .agents/
 ├── mcp_config.json           # Configuracao do Context7 MCP e integracoes locais
 └── skills/
-    └── ui-ux-pro/            # Skill de inteligencia visual, tokens e acessibilidade
+    ├── ui-ux-pro/            # Skill de inteligencia visual, tokens e acessibilidade
+    └── retomada-projeto/     # Skill de orientacao, harness e continuidade operacional
 docs/
 ├── prd.md                    # Requisitos do Produto (PRD) e escopo nacional
 ├── arquitetura.md            # Arquitetura tecnica Flutter, persistencia e resiliencia
