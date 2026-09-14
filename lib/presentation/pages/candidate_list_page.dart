@@ -190,32 +190,48 @@ class _CandidateListView extends StatelessWidget {
   }
 
   Widget _buildCandidatesContent(BuildContext context) {
-    return BlocBuilder<CandidateListBloc, CandidateListState>(
-      builder: (context, state) {
-        if (state.status == CandidateListStatus.loading && !state.isRefreshing) {
+    return BlocBuilder<ElectionFilterBloc, ElectionFilterState>(
+      builder: (context, filterState) {
+        if (filterState.status == ElectionFilterStatus.loading) {
           return const CandidateListLoadingView();
         }
-        if (state.status == CandidateListStatus.failure) {
-          final message = state.failure?.message ?? 'Falha ao recuperar registros do TSE.';
+        if (filterState.status == ElectionFilterStatus.failure) {
+          final message =
+              filterState.failure?.message ?? 'Falha ao carregar pleitos oficiais do TSE.';
           return CandidateListErrorView(
             errorMessage: message,
             onRetry: () => _triggerRefresh(context),
           );
         }
-        if (state.hasNoResults) {
-          return CandidateListEmptyView(
-            hasActiveFilters: state.hasActiveFilters,
-            onClearFilters: () => _clearFilters(context),
-          );
-        }
-        if (state.status == CandidateListStatus.success) {
-          return CandidateAdaptiveGrid(
-            candidates: state.filteredCandidates,
-            onCandidateSelected: (candidate) => _handleCandidateSelected(context, candidate),
-            onRefresh: () async => _triggerRefresh(context),
-          );
-        }
-        return const SizedBox.shrink();
+
+        return BlocBuilder<CandidateListBloc, CandidateListState>(
+          builder: (context, state) {
+            if (state.status == CandidateListStatus.loading && !state.isRefreshing) {
+              return const CandidateListLoadingView();
+            }
+            if (state.status == CandidateListStatus.failure) {
+              final message = state.failure?.message ?? 'Falha ao recuperar registros do TSE.';
+              return CandidateListErrorView(
+                errorMessage: message,
+                onRetry: () => _triggerRefresh(context),
+              );
+            }
+            if (state.hasNoResults) {
+              return CandidateListEmptyView(
+                hasActiveFilters: state.hasActiveFilters,
+                onClearFilters: () => _clearFilters(context),
+              );
+            }
+            if (state.status == CandidateListStatus.success) {
+              return CandidateAdaptiveGrid(
+                candidates: state.filteredCandidates,
+                onCandidateSelected: (candidate) => _handleCandidateSelected(context, candidate),
+                onRefresh: () async => _triggerRefresh(context),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        );
       },
     );
   }
@@ -243,7 +259,12 @@ class _CandidateListView extends StatelessWidget {
   }
 
   void _triggerRefresh(BuildContext context) {
-    final filterState = context.read<ElectionFilterBloc>().state;
+    final filterBloc = context.read<ElectionFilterBloc>();
+    final filterState = filterBloc.state;
+    if (filterState.status == ElectionFilterStatus.failure) {
+      filterBloc.add(const ElectionFilterStarted());
+      return;
+    }
     if (filterState.hasValidSelection) {
       final election = filterState.selectedElection!;
       final uf = filterState.selectedUf!;

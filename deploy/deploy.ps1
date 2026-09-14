@@ -36,8 +36,8 @@ scp deploy/proxy.mjs root@${ServerHost}:${RemoteDir}/proxy.mjs
 Write-Host "[DEPLOY] Sincronizando estaticos da aplicacao para $RemoteDir/web/..."
 scp -r build/web/* root@${ServerHost}:${RemoteDir}/web/
 
-# 5. Ajuste de permissoes e recarregamento dos servicos
-Write-Host "[DEPLOY] Ajustando permissoes e recarregando servicos..."
-ssh root@$ServerHost "chmod -R 755 $RemoteDir/web && cd $RemoteDir && docker compose up -d && docker exec quemvotar-web nginx -t && docker exec quemvotar-web nginx -s reload"
+# 5. Ajuste de permissoes, reinicio de servicos e expurgo de cache
+Write-Host "[DEPLOY] Ajustando permissoes, aplicando configuracoes e expurgando cache..."
+ssh root@$ServerHost "chmod -R 755 $RemoteDir/web && cd $RemoteDir && docker compose up -d --force-recreate && docker exec quemvotar-web rm -rf /var/cache/nginx/* && docker exec quemvotar-web nginx -t && docker exec quemvotar-web nginx -s reload"
 
 Write-Host "[DEPLOY] Deploy concluido com sucesso!"

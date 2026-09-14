@@ -40,21 +40,29 @@ class ElectionRepositoryImpl implements ElectionRepository {
   }
 
   Future<List<Election>?> _checkLocalElections() async {
-    final metadata = await _localDataSource.getCacheMetadata(_cacheKey);
-    if (!_isCacheFresh(metadata)) return null;
+    try {
+      final metadata = await _localDataSource.getCacheMetadata(_cacheKey);
+      if (!_isCacheFresh(metadata)) return null;
 
-    final localData = await _localDataSource.getElections();
-    if (localData.isEmpty) return null;
+      final localData = await _localDataSource.getElections();
+      if (localData.isEmpty) return null;
 
-    return localData.map(TseElectionMapper.fromData).toList(growable: false);
+      return localData.map(TseElectionMapper.fromData).toList(growable: false);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Result<List<Election>, Failure>> _fetchAndSyncElections() async {
     try {
       final remoteList = await _remoteDataSource.getOrdinarias();
-      await _syncElections(remoteList);
-      final local = await _localDataSource.getElections();
-      return Result.success(local.map(TseElectionMapper.fromData).toList(growable: false));
+      try {
+        await _syncElections(remoteList);
+      } catch (_) {
+        // Falha nao-fatal de escrita no cache local
+      }
+      final domainList = remoteList.map(TseElectionMapper.fromDto).toList(growable: false);
+      return Result.success(domainList);
     } catch (e) {
       return _fallbackElections(e, 'ElectionRepositoryImpl.getElections');
     }

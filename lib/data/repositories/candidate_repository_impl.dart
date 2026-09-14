@@ -103,17 +103,21 @@ class CandidateRepositoryImpl implements CandidateRepository {
     required bool forceRefresh,
   }) async {
     if (forceRefresh) return null;
-    final metadata = await _localDataSource.getCacheMetadata(cacheKey);
-    if (!_isCacheFresh(metadata)) return null;
+    try {
+      final metadata = await _localDataSource.getCacheMetadata(cacheKey);
+      if (!_isCacheFresh(metadata)) return null;
 
-    final localData = await _localDataSource.getCandidates(
-      electionId: electionId,
-      stateCode: stateCode,
-      roleCode: roleCode,
-    );
-    if (localData.isEmpty) return null;
+      final localData = await _localDataSource.getCandidates(
+        electionId: electionId,
+        stateCode: stateCode,
+        roleCode: roleCode,
+      );
+      if (localData.isEmpty) return null;
 
-    return localData.map(TseCandidateSummaryMapper.fromData).toList(growable: false);
+      return localData.map(TseCandidateSummaryMapper.fromData).toList(growable: false);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Result<List<CandidateSummary>, Failure>> _fetchAndSyncCandidates({
@@ -130,20 +134,25 @@ class CandidateRepositoryImpl implements CandidateRepository {
         electionId: electionId,
         roleCode: roleCode,
       );
-      await _ensureElectionExists(electionId: electionId, year: year, stateCode: cleanUf);
-      await _syncCandidateListEnvelope(
-        cacheKey: cacheKey,
-        envelope: envelope,
-        electionId: electionId,
-        stateCode: cleanUf,
-        roleCode: roleCode,
-      );
-      final local = await _localDataSource.getCandidates(
-        electionId: electionId,
-        stateCode: cleanUf,
-        roleCode: roleCode,
-      );
-      return Result.success(local.map(TseCandidateSummaryMapper.fromData).toList(growable: false));
+      try {
+        await _ensureElectionExists(electionId: electionId, year: year, stateCode: cleanUf);
+        await _syncCandidateListEnvelope(
+          cacheKey: cacheKey,
+          envelope: envelope,
+          electionId: electionId,
+          stateCode: cleanUf,
+          roleCode: roleCode,
+        );
+      } catch (_) {
+        // Falha de escrita no cache local nao impede a apresentacao dos dados obtidos
+      }
+      final domainList = envelope.candidates
+          .map(
+            (dto) =>
+                TseCandidateSummaryMapper.fromDto(dto, electionId: electionId, ufOrMun: cleanUf),
+          )
+          .toList(growable: false);
+      return Result.success(domainList);
     } catch (e) {
       return _fallbackCandidates(
         electionId: electionId,
@@ -204,17 +213,21 @@ class CandidateRepositoryImpl implements CandidateRepository {
     required bool forceRefresh,
   }) async {
     if (forceRefresh) return null;
-    final metadata = await _localDataSource.getCacheMetadata(cacheKey);
-    if (!_isCacheFresh(metadata)) return null;
+    try {
+      final metadata = await _localDataSource.getCacheMetadata(cacheKey);
+      if (!_isCacheFresh(metadata)) return null;
 
-    final record = await _localDataSource.getCandidateDetailRecord(candidateId);
-    if (record == null || !record.candidate.detailFetched) return null;
+      final record = await _localDataSource.getCandidateDetailRecord(candidateId);
+      if (record == null || !record.candidate.detailFetched) return null;
 
-    return TseCandidateDetailMapper.fromDatabase(
-      candidate: record.candidate,
-      assets: record.assets,
-      runningMates: record.runningMates,
-    );
+      return TseCandidateDetailMapper.fromDatabase(
+        candidate: record.candidate,
+        assets: record.assets,
+        runningMates: record.runningMates,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Result<CandidateDetail, Failure>> _fetchAndSyncCandidateDetail({
@@ -232,24 +245,18 @@ class CandidateRepositoryImpl implements CandidateRepository {
         candidateId: candidateId,
       );
 
-      await _ensureElectionExists(electionId: electionId, year: year, stateCode: cleanUf);
-      await _syncCandidateDetailRecord(
-        cacheKey: cacheKey,
-        detailDto: detailDto,
-        electionId: electionId,
-        stateCode: cleanUf,
-      );
-
-      final record = await _localDataSource.getCandidateDetailRecord(candidateId);
-      if (record != null) {
-        return Result.success(
-          TseCandidateDetailMapper.fromDatabase(
-            candidate: record.candidate,
-            assets: record.assets,
-            runningMates: record.runningMates,
-          ),
+      try {
+        await _ensureElectionExists(electionId: electionId, year: year, stateCode: cleanUf);
+        await _syncCandidateDetailRecord(
+          cacheKey: cacheKey,
+          detailDto: detailDto,
+          electionId: electionId,
+          stateCode: cleanUf,
         );
+      } catch (_) {
+        // Falha nao-fatal de sincronizacao de cache local
       }
+
       return Result.success(
         TseCandidateDetailMapper.fromDto(detailDto, electionId: electionId, ufOrMun: cleanUf),
       );

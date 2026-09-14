@@ -22,24 +22,41 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  const targetUrl = `${TSE_ORIGIN}${req.url}`;
+  let pathname = req.url || '/';
+  // Normalizacao defensiva: se a rota comeca com /divulga/rest/ mas nao contem v1 nem arquivo, insere v1
+  if (
+    pathname.startsWith('/divulga/rest/') &&
+    !pathname.startsWith('/divulga/rest/v1/') &&
+    !pathname.startsWith('/divulga/rest/arquivo/')
+  ) {
+    pathname = pathname.replace('/divulga/rest/', '/divulga/rest/v1/');
+  }
+
+  const targetUrl = `${TSE_ORIGIN}${pathname}`;
+  const startTime = Date.now();
+
   try {
     const upstream = await fetch(targetUrl, {
       method: req.method,
       headers: FORWARD_HEADERS,
     });
 
+    const duration = Date.now() - startTime;
+    console.log(`[PROXY] ${req.method} ${pathname} -> HTTP ${upstream.status} (${duration}ms)`);
+
     const responseHeaders = {
       'Content-Type': upstream.headers.get('content-type') || 'application/json;charset=UTF-8',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Cache-Control': 'public, max-age=900',
+      'Cache-Control': upstream.ok ? 'public, max-age=900' : 'no-cache, no-store',
     };
 
     res.writeHead(upstream.status, responseHeaders);
     const arrayBuffer = await upstream.arrayBuffer();
     res.end(Buffer.from(arrayBuffer));
   } catch (err) {
+    const duration = Date.now() - startTime;
+    console.error(`[PROXY ERRO] ${req.method} ${pathname} -> ${err.message} (${duration}ms)`);
     res.writeHead(502, {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
