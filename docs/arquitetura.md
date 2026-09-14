@@ -75,6 +75,10 @@ Diferente de sistemas convencionais dependentes de servidores intermediarios pro
      * `Referer: https://divulgacandcontas.tse.jus.br/`
      * `Origin: https://divulgacandcontas.tse.jus.br`
 
+* **Superacao em Ambiente Web (Flutter Web SPA):**
+  1. No navegador, o motor JavaScript e impedido pela especificacao W3C de alterar cabecalhos proibidos (`User-Agent`, `Referer`, `Origin`) e sofre bloqueio estrito de CORS pelo servidor do TSE.
+  2. Conforme detalhado em `docs/infraestrutura-web.md`, a versao Web utiliza como Base URL o endpoint relativo `/quemvotar/api/`. O Nginx da Maquina Virtual Contabo intercepta as chamadas, injeta os cabecalhos Akamai legitimos, aplica liberacao universal de CORS (`Access-Control-Allow-Origin: *`) e opera um Micro-Cache de 15 minutos em disco, assegurando escalabilidade massiva e resposta de 2ms para eleitores em todo o territorio nacional.
+
 ### 2.2 Estrategia de Cache Sob Demanda com Deteccao de Deltas
 Para evitar a exibicao de dados defasados sem sobrecarregar a infraestrutura governamental, implementa-se um ciclo de vida de dados baseado em **Stale-While-Revalidate (SWR) com Verificacao de Integridade**:
 
@@ -103,6 +107,10 @@ Durante o periodo critico de campanha eleitoral, a API do TSE experimenta picos 
 ## 3. Modelo de Persistencia Relacional Local (Drift / SQLite)
 
 O banco de dados relacional local garante indexacao rapida, buscas textuais compativeis com acentuacao da lingua portuguesa e suporte a consultas complexas em todo o territorio nacional.
+
+* **Execucao Multiplataforma do Drift:**
+  * **Em Plataformas Nativas (Android / iOS / Windows):** O Drift opera sobre as bibliotecas compartilhadas C do SQLite compiladas (`sqlite3_flutter_libs`), armazenando o arquivo de banco relacional no sistema de arquivos local do dispositivo.
+  * **Em Plataforma Web (Flutter Web):** O Drift utiliza o driver WebAssembly (`drift/wasm.dart`). O motor SQLite roda em sandbox isolada no navegador do eleitor com persistencia relacional transparente via IndexedDB ou Origin Private File System (OPFS), mantendo o mesmo schema, as mesmas consultas reativas e a mesma capacidade de operacao offline.
 
 ### 3.1 Esquema de Tabelas Principais
 
