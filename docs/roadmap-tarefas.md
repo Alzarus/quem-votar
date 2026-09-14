@@ -106,7 +106,7 @@ Toda tarefa deve:
 | T6.3   | BLoC de Detalhes do Candidato e Auditoria Patrimonial       | [CONCLUIDO]    |
 | T6.4   | Pagina responsiva CandidateListPage (1, 2 e 3 colunas)      | [CONCLUIDO]    |
 | T6.5   | Pagina de detalhes CandidateDetailPage                     | [CONCLUIDO]    |
-| T6.6   | Testes de integracao de fluxo de tela                       | [PENDENTE]     |
+| T6.6   | Testes de integracao de fluxo de tela                       | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+

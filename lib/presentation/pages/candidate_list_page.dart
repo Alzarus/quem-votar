@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quem_votar/domain/entities/candidate_summary.dart';
+import 'package:quem_votar/domain/usecases/get_candidate_detail_use_case.dart';
+import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_bloc.dart';
+import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_event.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_bloc.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_event.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_state.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_event.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_state.dart';
+import 'package:quem_votar/presentation/pages/candidate_detail_page.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 import 'package:quem_votar/presentation/theme/app_spacing.dart';
 import 'package:quem_votar/presentation/theme/app_typography.dart';
@@ -207,7 +211,7 @@ class _CandidateListView extends StatelessWidget {
         if (state.status == CandidateListStatus.success) {
           return CandidateAdaptiveGrid(
             candidates: state.filteredCandidates,
-            onCandidateSelected: onCandidateSelected,
+            onCandidateSelected: (candidate) => _handleCandidateSelected(context, candidate),
             onRefresh: () async => _triggerRefresh(context),
           );
         }
@@ -262,5 +266,49 @@ class _CandidateListView extends StatelessWidget {
   void _clearFilters(BuildContext context) {
     context.read<CandidateListBloc>().add(const CandidateListSearchQueryChanged(''));
     context.read<CandidateListBloc>().add(const CandidateListPartyFilterChanged(null));
+  }
+
+  void _handleCandidateSelected(BuildContext context, CandidateSummary candidate) {
+    if (onCandidateSelected != null) {
+      onCandidateSelected!(candidate);
+      return;
+    }
+    _navigateToDetail(context, candidate);
+  }
+
+  void _navigateToDetail(BuildContext context, CandidateSummary candidate) {
+    final filterState = context.read<ElectionFilterBloc>().state;
+    final electionId = filterState.selectedElection?.id ?? 2040602026;
+    final year = filterState.selectedElection?.year ?? 2026;
+    final uf = filterState.selectedUf?.acronym ?? 'BR';
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (navContext) {
+          final detailUseCase = _resolveDetailUseCase(context);
+          if (detailUseCase != null) {
+            final detailBloc = CandidateDetailBloc(getCandidateDetailUseCase: detailUseCase)
+              ..add(
+                CandidateDetailLoadStarted(
+                  year: year,
+                  ufOrMun: uf,
+                  electionId: electionId,
+                  candidateId: candidate.id,
+                ),
+              );
+            return CandidateDetailPage(candidateDetailBloc: detailBloc);
+          }
+          return const CandidateDetailPage();
+        },
+      ),
+    );
+  }
+
+  GetCandidateDetailUseCase? _resolveDetailUseCase(BuildContext context) {
+    try {
+      return context.read<GetCandidateDetailUseCase>();
+    } catch (_) {
+      return null;
+    }
   }
 }

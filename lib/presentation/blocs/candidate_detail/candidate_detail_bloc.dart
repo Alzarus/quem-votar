@@ -25,7 +25,7 @@ class CandidateDetailBloc extends Bloc<CandidateDetailEvent, CandidateDetailStat
     CandidateDetailLoadStarted event,
     Emitter<CandidateDetailState> emit,
   ) async {
-    _emitPreFetchLoading(event.forceRefresh, emit);
+    _emitPreFetchLoading(event, emit);
     final params = GetCandidateDetailParams(
       year: event.year,
       ufOrMun: event.ufOrMun,
@@ -36,12 +36,21 @@ class CandidateDetailBloc extends Bloc<CandidateDetailEvent, CandidateDetailStat
     await _fetchAndEmitDetail(params, emit);
   }
 
-  void _emitPreFetchLoading(bool forceRefresh, Emitter<CandidateDetailState> emit) {
-    if (forceRefresh && state.candidateDetail != null) {
+  void _emitPreFetchLoading(CandidateDetailLoadStarted event, Emitter<CandidateDetailState> emit) {
+    if (event.forceRefresh && state.candidateDetail != null) {
       emit(state.copyWith(isRefreshing: true));
       return;
     }
-    emit(state.copyWith(status: CandidateDetailStatus.loading, isRefreshing: false));
+    emit(
+      state.copyWith(
+        status: CandidateDetailStatus.loading,
+        isRefreshing: false,
+        activeYear: event.year,
+        activeUfOrMun: event.ufOrMun,
+        activeElectionId: event.electionId,
+        activeCandidateId: event.candidateId,
+      ),
+    );
   }
 
   Future<void> _fetchAndEmitDetail(
@@ -138,8 +147,16 @@ class CandidateDetailBloc extends Bloc<CandidateDetailEvent, CandidateDetailStat
       candidateId: state.activeCandidateId!,
       forceRefresh: true,
     );
-    _emitPreFetchLoading(true, emit);
+    _emitRefreshLoading(emit);
     await _fetchAndEmitDetail(params, emit);
+  }
+
+  void _emitRefreshLoading(Emitter<CandidateDetailState> emit) {
+    if (state.candidateDetail != null) {
+      emit(state.copyWith(isRefreshing: true));
+      return;
+    }
+    emit(state.copyWith(status: CandidateDetailStatus.loading, isRefreshing: false));
   }
 
   void _onAssetSortOptionChanged(
