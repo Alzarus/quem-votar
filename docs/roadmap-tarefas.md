@@ -44,7 +44,7 @@ Toda tarefa deve:
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
 | T1.1   | Tipos Result<T, Failure> e excecoes contextuais de erro     | [CONCLUIDO]    |
-| T1.2   | Cliente HTTP Dio com suporte a Akamai e base relativa Web   | [PENDENTE]     |
+| T1.2   | Cliente HTTP Dio com suporte a Akamai e base relativa Web   | [CONCLUIDO]    |
 | T1.3   | Circuit Breaker em memoria de tres estados (Closed/Open/Half)| [PENDENTE]     |
 | T1.4   | Testes unitarios headless de rede e Circuit Breaker         | [PENDENTE]     |
 +--------+-------------------------------------------------------------+----------------+
