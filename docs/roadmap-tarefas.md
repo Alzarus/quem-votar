@@ -54,11 +54,11 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T2.1   | Definicao dos schemas das tabelas Drift (5 tabelas)         | [PENDENTE]     |
-| T2.2   | Declaracao dos 6 indices de performance SQLite              | [PENDENTE]     |
-| T2.3   | Conexao multiplataforma (Drift Native vs Drift WASM)        | [PENDENTE]     |
-| T2.4   | Execucao do build_runner e geracao do AppDatabase           | [PENDENTE]     |
-| T2.5   | Testes unitarios headless com SQLite em memoria             | [PENDENTE]     |
+| T2.1   | Definicao dos schemas das tabelas Drift (5 tabelas)         | [CONCLUIDO]    |
+| T2.2   | Declaracao dos 6 indices de performance SQLite              | [CONCLUIDO]    |
+| T2.3   | Conexao multiplataforma (Drift Native vs Drift WASM)        | [CONCLUIDO]    |
+| T2.4   | Execucao do build_runner e geracao do AppDatabase           | [CONCLUIDO]    |
+| T2.5   | Testes unitarios headless com SQLite em memoria             | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+
