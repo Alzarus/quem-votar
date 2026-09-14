@@ -90,10 +90,10 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T5.1   | Tokens semanticos de cor (HSL) e temas Claro/Escuro         | [PENDENTE]     |
-| T5.2   | Escala tipografica acessivel com textScaler dinamico        | [PENDENTE]     |
-| T5.3   | Componentes atomicos acessiveis (Avatar, Badge, Chips, Card)| [PENDENTE]     |
-| T5.4   | Testes de widget e verificacao WCAG (alvos 48dp e Semantics)| [PENDENTE]     |
+| T5.1   | Tokens semanticos de cor (HSL) e temas Claro/Escuro         | [CONCLUIDO]    |
+| T5.2   | Escala tipografica acessivel com textScaler dinamico        | [CONCLUIDO]    |
+| T5.3   | Componentes atomicos acessiveis (Avatar, Badge, Chips, Card)| [CONCLUIDO]    |
+| T5.4   | Testes de widget e verificacao WCAG (alvos 48dp e Semantics)| [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+

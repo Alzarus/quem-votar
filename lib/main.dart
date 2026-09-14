@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quem_votar/presentation/theme/app_theme.dart';
 
 void main() {
   runApp(const QuemVotarApp());
@@ -12,10 +13,9 @@ class QuemVotarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Quem Votar',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F3D2E)),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: const Scaffold(
         body: Center(child: Text('Quem Votar - Plataforma de Transparencia Eleitoral')),
       ),
