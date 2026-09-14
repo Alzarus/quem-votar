@@ -104,7 +104,7 @@ Toda tarefa deve:
 | T6.1   | BLoC de Selecao de Eleicao, UF e Cargo (Padrao: 2026/BR)    | [CONCLUIDO]    |
 | T6.2   | BLoC de Listagem de Candidatos com busca textual e debounce | [CONCLUIDO]    |
 | T6.3   | BLoC de Detalhes do Candidato e Auditoria Patrimonial       | [CONCLUIDO]    |
-| T6.4   | Pagina responsiva CandidateListPage (1, 2 e 3 colunas)      | [PENDENTE]     |
+| T6.4   | Pagina responsiva CandidateListPage (1, 2 e 3 colunas)      | [CONCLUIDO]    |
 | T6.5   | Pagina de detalhes CandidateDetailPage                     | [PENDENTE]     |
 | T6.6   | Testes de integracao de fluxo de tela                       | [PENDENTE]     |
 +--------+-------------------------------------------------------------+----------------+
