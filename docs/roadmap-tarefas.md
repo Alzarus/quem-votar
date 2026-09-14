@@ -81,8 +81,8 @@ Toda tarefa deve:
 | T4.1   | DTOs e Mappers defensivos com parsing estrito de nulos      | [CONCLUIDO]    |
 | T4.2   | TseRemoteDataSource com decodificacao de envelopes TSE      | [CONCLUIDO]    |
 | T4.3   | CandidateLocalDataSource com operacoes de DAOs do Drift     | [CONCLUIDO]    |
-| T4.4   | CandidateRepositoryImpl com politica SWR e hash SHA-256     | [PENDENTE]     |
-| T4.5   | Testes unitarios de mappers e do ciclo SWR com fixtures     | [PENDENTE]     |
+| T4.4   | CandidateRepositoryImpl com politica SWR e hash SHA-256     | [CONCLUIDO]    |
+| T4.5   | Testes unitarios de mappers e do ciclo SWR com fixtures     | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+
