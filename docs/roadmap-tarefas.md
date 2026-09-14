@@ -78,7 +78,7 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T4.1   | DTOs e Mappers defensivos com parsing estrito de nulos      | [PENDENTE]     |
+| T4.1   | DTOs e Mappers defensivos com parsing estrito de nulos      | [CONCLUIDO]    |
 | T4.2   | TseRemoteDataSource com decodificacao de envelopes TSE      | [PENDENTE]     |
 | T4.3   | CandidateLocalDataSource com operacoes de DAOs do Drift     | [PENDENTE]     |
 | T4.4   | CandidateRepositoryImpl com politica SWR e hash SHA-256     | [PENDENTE]     |
