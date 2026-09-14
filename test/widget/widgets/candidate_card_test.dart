@@ -92,5 +92,31 @@ void main() {
 
       handle.dispose();
     });
+
+    testWidgets('deve exibir mensagem orientativa quando bens declarados forem nulos na listagem', (
+      tester,
+    ) async {
+      const candidateWithoutAssets = CandidateSummary(
+        id: 280001607821,
+        ballotNumber: 13,
+        ballotName: 'LULA',
+        fullName: 'LUIZ INACIO LULA DA SILVA',
+        roleCode: 1,
+        roleDescription: 'Presidente',
+        partyAcronym: 'PT',
+        partyName: 'Partido dos Trabalhadores',
+        coalitionName: 'BRASIL DA ESPERANCA',
+        photoUrl: 'https://divulgacandcontas.tse.jus.br/foto.jpg',
+        registrationStatus: RegistrationStatus.deferred,
+        rawStatusDescription: 'DEFERIDO',
+        totalAssetsAmount: null,
+      );
+
+      await tester.pumpWidget(
+        buildTestableWidget(const CandidateCard(candidate: candidateWithoutAssets)),
+      );
+
+      expect(find.text('Bens: Consultar na ficha'), findsOneWidget);
+    });
   });
 }

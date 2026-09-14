@@ -18,7 +18,7 @@ class CandidateSummary extends Equatable {
   final String photoUrl;
   final RegistrationStatus registrationStatus;
   final String rawStatusDescription;
-  final double totalAssetsAmount;
+  final double? totalAssetsAmount;
   final int? parentCandidateId;
 
   const CandidateSummary({
@@ -34,7 +34,7 @@ class CandidateSummary extends Equatable {
     required this.photoUrl,
     required this.registrationStatus,
     required this.rawStatusDescription,
-    required this.totalAssetsAmount,
+    this.totalAssetsAmount,
     this.parentCandidateId,
   });
 

@@ -36,7 +36,7 @@ void main() {
       expect(summary.partyName, equals('PDT')); // quando nome nulo, usa sigla
       expect(summary.registrationStatus, equals(RegistrationStatus.deferred));
       expect(summary.rawStatusDescription, equals('Deferido'));
-      expect(summary.totalAssetsAmount, equals(0.0));
+      expect(summary.totalAssetsAmount, isNull);
       expect(
         summary.photoUrl,
         equals(

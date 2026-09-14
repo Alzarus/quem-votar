@@ -74,5 +74,31 @@ void main() {
         equals('https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/doc/280010929672'),
       );
     });
+
+    test('deve reescrever para rota do micro-proxy quando isWeb for verdadeiro', () {
+      final urnaUrl = TseUrlBuilder.buildUrnaPhotoUrl(
+        electionId: electionId,
+        candidateId: candidateId,
+        ufOrMun: 'BR',
+        isWeb: true,
+      );
+      final thumbUrl = TseUrlBuilder.buildThumbnailPhotoUrl(
+        electionId: electionId,
+        candidateId: candidateId,
+        isWeb: true,
+      );
+      final docUrl = TseUrlBuilder.buildProposalDocumentUrl(280010929672, isWeb: true);
+
+      expect(urnaUrl, equals('/quemvotar/api/arquivo/img/20322002026/280001612393/BR'));
+      expect(thumbUrl, equals('/quemvotar/api/candidatura/buscar/foto/20322002026/280001612393/1'));
+      expect(docUrl, equals('/quemvotar/api/arquivo/doc/280010929672'));
+    });
+
+    test('deve preservar URL inalterada quando formatMediaUrl executado com isWeb falso', () {
+      const raw = 'https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/1/2/BR';
+      final formatted = TseUrlBuilder.formatMediaUrl(raw, isWeb: false);
+
+      expect(formatted, equals(raw));
+    });
   });
 }

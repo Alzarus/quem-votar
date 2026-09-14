@@ -113,9 +113,12 @@ class CandidateCard extends StatelessWidget {
   }
 
   Widget _buildDeclaredAssets(AppSemanticColors semantic) {
-    final formatted = CurrencyFormatter.formatBrl(candidate.totalAssetsAmount);
+    final amount = candidate.totalAssetsAmount;
+    final text = amount != null
+        ? 'Bens declarados: ${CurrencyFormatter.formatBrl(amount)}'
+        : 'Bens: Consultar na ficha';
     return Text(
-      'Bens declarados: $formatted',
+      text,
       style: AppTypography.bodyMedium.copyWith(
         color: semantic.textSecondary,
         fontWeight: FontWeight.w500,
@@ -124,10 +127,13 @@ class CandidateCard extends StatelessWidget {
   }
 
   String _buildAccessibleLabel() {
-    final formatted = CurrencyFormatter.formatBrl(candidate.totalAssetsAmount);
+    final amount = candidate.totalAssetsAmount;
+    final assetsText = amount != null
+        ? 'Bens declarados: ${CurrencyFormatter.formatBrl(amount)}.'
+        : 'Bens declarados disponíveis na ficha detalhada.';
     return 'Candidatura de ${candidate.ballotName}, partido ${candidate.partyAcronym}, '
         'número ${candidate.ballotNumber}. Situação do registro: '
-        '${candidate.registrationStatus.name}. Bens declarados: $formatted. '
+        '${candidate.registrationStatus.name}. $assetsText '
         'Tocar para ver detalhes cadastrais.';
   }
 }

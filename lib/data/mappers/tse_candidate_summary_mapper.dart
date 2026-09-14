@@ -37,7 +37,7 @@ abstract final class TseCandidateSummaryMapper {
       photoUrl: photoUrl,
       registrationStatus: status,
       rawStatusDescription: dto.rawStatusDescription,
-      totalAssetsAmount: dto.totalAssets ?? 0.0,
+      totalAssetsAmount: dto.totalAssets,
       parentCandidateId: null,
     );
   }
@@ -45,6 +45,7 @@ abstract final class TseCandidateSummaryMapper {
   /// Converte registro relacional [CandidateData] persistido em SQLite para [CandidateSummary].
   static CandidateSummary fromData(CandidateData data) {
     final status = RegistrationStatusParser.fromStorageString(data.status);
+    final hasConfirmedAssets = data.detailFetched || data.totalAssets > 0;
 
     return CandidateSummary(
       id: data.id,
@@ -59,7 +60,7 @@ abstract final class TseCandidateSummaryMapper {
       photoUrl: data.photoUrl,
       registrationStatus: status,
       rawStatusDescription: data.rawStatus,
-      totalAssetsAmount: data.totalAssets,
+      totalAssetsAmount: hasConfirmedAssets ? data.totalAssets : null,
       parentCandidateId: data.parentCandidateId,
     );
   }

@@ -127,7 +127,7 @@ class CandidateDetailBloc extends Bloc<CandidateDetailEvent, CandidateDetailStat
     if (detail.assets.isNotEmpty) {
       return detail.assets.fold<double>(0.0, (sum, asset) => sum + asset.amount);
     }
-    return detail.totalAssetsAmount;
+    return detail.totalAssetsAmount ?? 0.0;
   }
 
   Future<void> _onRefreshRequested(

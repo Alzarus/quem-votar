@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quem_votar/data/mappers/tse_url_builder.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 
 /// Componente atomico acessivel para exibicao de fotografia oficial de urna.
@@ -25,8 +26,9 @@ class CandidateAvatarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = context.semanticColors;
-    final url = photoUrl?.trim();
-    final hasValidUrl = url != null && url.isNotEmpty;
+    final rawUrl = photoUrl?.trim();
+    final hasValidUrl = rawUrl != null && rawUrl.isNotEmpty;
+    final resolvedUrl = hasValidUrl ? TseUrlBuilder.formatMediaUrl(rawUrl) : null;
 
     return Semantics(
       image: true,
@@ -40,7 +42,9 @@ class CandidateAvatarWidget extends StatelessWidget {
           border: Border.all(color: semantic.borderSubtle, width: 1.5),
         ),
         clipBehavior: Clip.antiAlias,
-        child: hasValidUrl ? _buildNetworkImage(url, semantic) : _buildFallbackIcon(semantic),
+        child: resolvedUrl != null
+            ? _buildNetworkImage(resolvedUrl, semantic)
+            : _buildFallbackIcon(semantic),
       ),
     );
   }

@@ -299,7 +299,7 @@ class _CandidateListView extends StatelessWidget {
 
   void _navigateToDetail(BuildContext context, CandidateSummary candidate) {
     final filterState = context.read<ElectionFilterBloc>().state;
-    final electionId = filterState.selectedElection?.id ?? 2040602026;
+    final electionId = filterState.selectedElection?.id ?? 20322002026;
     final year = filterState.selectedElection?.year ?? 2026;
     final uf = filterState.selectedUf?.acronym ?? 'BR';
 
