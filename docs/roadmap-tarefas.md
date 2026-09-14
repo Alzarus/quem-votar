@@ -101,7 +101,7 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T6.1   | BLoC de Selecao de Eleicao, UF e Cargo (Padrao: 2026/BR)    | [PENDENTE]     |
+| T6.1   | BLoC de Selecao de Eleicao, UF e Cargo (Padrao: 2026/BR)    | [CONCLUIDO]    |
 | T6.2   | BLoC de Listagem de Candidatos com busca textual e debounce | [PENDENTE]     |
 | T6.3   | BLoC de Detalhes do Candidato e Auditoria Patrimonial       | [PENDENTE]     |
 | T6.4   | Pagina responsiva CandidateListPage (1, 2 e 3 colunas)      | [PENDENTE]     |
