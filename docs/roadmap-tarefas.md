@@ -66,11 +66,11 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T3.1   | Entidades puras e imutaveis (CandidateSummary, Detail, etc.)| [PENDENTE]     |
-| T3.2   | Enums e Value Objects tipados (CandidateStatus, Gender, etc)| [PENDENTE]     |
-| T3.3   | Contratos abstratos de repositorios                         | [PENDENTE]     |
-| T3.4   | Casos de uso (GetCandidatesList, GetCandidateDetail, etc.)  | [PENDENTE]     |
-| T3.5   | Testes unitarios dos casos de uso com fakes nomeados        | [PENDENTE]     |
+| T3.1   | Entidades puras e imutaveis (CandidateSummary, Detail, etc.)| [CONCLUIDO]    |
+| T3.2   | Enums e Value Objects tipados (CandidateStatus, Gender, etc)| [CONCLUIDO]    |
+| T3.3   | Contratos abstratos de repositorios                         | [CONCLUIDO]    |
+| T3.4   | Casos de uso (GetCandidatesList, GetCandidateDetail, etc.)  | [CONCLUIDO]    |
+| T3.5   | Testes unitarios dos casos de uso com fakes nomeados        | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 
 +---------------------------------------------------------------------------------------+
