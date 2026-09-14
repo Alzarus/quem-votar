@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quem_votar/core/network/dio_client_factory.dart';
+import 'package:quem_votar/data/database/app_database.dart';
+import 'package:quem_votar/data/datasources/candidate_local_data_source.dart';
+import 'package:quem_votar/data/datasources/tse_remote_data_source.dart';
+import 'package:quem_votar/data/repositories/candidate_repository_impl.dart';
+import 'package:quem_votar/data/repositories/election_repository_impl.dart';
 import 'package:quem_votar/domain/usecases/get_candidate_detail_use_case.dart';
 import 'package:quem_votar/domain/usecases/get_candidates_list_use_case.dart';
 import 'package:quem_votar/domain/usecases/get_elections_use_case.dart';
@@ -10,7 +16,50 @@ import 'package:quem_votar/presentation/pages/candidate_list_page.dart';
 import 'package:quem_votar/presentation/theme/app_theme.dart';
 
 void main() {
-  runApp(const QuemVotarApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    debugPrint('[QuemVotar] Inicializando dependencias de producao...');
+    final dio = TseDioClientFactory.create();
+    final remoteDataSource = TseRemoteDataSourceImpl(dio: dio);
+    final database = AppDatabase();
+    final localDataSource = CandidateLocalDataSourceImpl(db: database);
+
+    final electionRepository = ElectionRepositoryImpl(
+      remoteDataSource: remoteDataSource,
+      localDataSource: localDataSource,
+    );
+    final candidateRepository = CandidateRepositoryImpl(
+      remoteDataSource: remoteDataSource,
+      localDataSource: localDataSource,
+    );
+
+    final getElectionsUseCase = GetElectionsUseCase(electionRepository);
+    final getCandidatesListUseCase = GetCandidatesListUseCase(candidateRepository);
+    final getCandidateDetailUseCase = GetCandidateDetailUseCase(candidateRepository);
+
+    debugPrint('[QuemVotar] Dependencias configuradas com exito. Iniciando aplicacao...');
+    runApp(
+      QuemVotarApp(
+        getElectionsUseCase: getElectionsUseCase,
+        getCandidatesListUseCase: getCandidatesListUseCase,
+        getCandidateDetailUseCase: getCandidateDetailUseCase,
+      ),
+    );
+  } catch (e, stack) {
+    debugPrint('[QuemVotar ERRO NA INICIALIZACAO] $e\n$stack');
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Falha na inicializacao do Quem Votar: $e\n$stack'),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Ponto de entrada raiz da aplicacao civica Quem Votar.

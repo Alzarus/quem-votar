@@ -114,11 +114,11 @@ Toda tarefa deve:
 +--------+-------------------------------------------------------------+----------------+
 | Codigo | Descricao e Escopo Tecnico                                  | Status         |
 +--------+-------------------------------------------------------------+----------------+
-| T7.1   | Estruturacao de /opt/quemvotar e Docker Compose na VM       | [PENDENTE]     |
-| T7.2   | Configuracao do Nginx Alpine com Micro-Proxy de Cache TSE   | [PENDENTE]     |
-| T7.3   | Configuracao do Proxy Host e SSL no Nginx Proxy Manager     | [PENDENTE]     |
-| T7.4   | Build de producao web e deploy automatizado via SCP         | [PENDENTE]     |
-| T7.5   | Validacao de operacao offline (PWA) e auditoria de cache    | [PENDENTE]     |
+| T7.1   | Estruturacao de /opt/quemvotar e Docker Compose na VM       | [CONCLUIDO]    |
+| T7.2   | Configuracao do Nginx Alpine com Micro-Proxy de Cache TSE   | [CONCLUIDO]    |
+| T7.3   | Configuracao do Proxy Host e SSL no Nginx Proxy Manager     | [CONCLUIDO]    |
+| T7.4   | Build de producao web e deploy automatizado via SCP         | [CONCLUIDO]    |
+| T7.5   | Validacao de operacao offline (PWA) e auditoria de cache    | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 ```
 
