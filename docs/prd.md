@@ -3,8 +3,8 @@
 ## Projeto: Plataforma de Transparencia Civica e Acompanhamento Eleitoral
 **Documento:** PRD-001  
 **Classificacao:** Especificacao Funcional e de Negocio  
-**Revisao:** 2.0.0  
-**Data:** 11 de setembro de 2026  
+**Revisao:** 2.1.0  
+**Data:** 15 de setembro de 2026  
 
 ---
 
@@ -135,3 +135,6 @@ Desenvolver uma aplicacao civica (Civic Tech) de codigo aberto, estritamente neu
 2. Ingestao em lote (ETL) dos arquivos consolidados CSV do Repositorio de Dados Abertos do TSE.
 3. Comparacao historica de evolucao patrimonial abrangendo pleitos de 2004 a 2024.
 4. Analise de concentracao de despesas e maiores doadores com visualizacao em graficos vetoriais interativos acessiveis.
+5. Filtragem multipartidaria simultanea permitindo selecao concomitante de multiplas legendas e federacoes.
+6. Alternancia explicita de temas claro e escuro na interface com persistencia local da preferencia do usuario.
+7. Otimizacao ergonomica da experiencia PWA com historico de navegacao resiliente e suporte a Pull-to-Refresh.

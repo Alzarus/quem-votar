@@ -3,8 +3,8 @@
 ## Projeto: Plataforma de Transparencia Civica e Acompanhamento Eleitoral
 **Documento:** WBS-001  
 **Classificacao:** Plano Operacional, Rastreabilidade e Gestao de Tarefas  
-**Revisao:** 1.0.0  
-**Data:** 13 de setembro de 2026  
+**Revisao:** 1.1.0  
+**Data:** 15 de setembro de 2026  
 **Status de Referencia:** [PENDENTE] Nao iniciado | [EM PROGRESSO] Em execucao | [CONCLUIDO] Validado no Harness  
 
 ---
@@ -289,6 +289,90 @@ Toda tarefa deve:
 | **B.1** | Correcao definitiva da exibicao do icone do botao de filtros no Web | Investigar o tree-shaking de fontes de icones no Flutter Web (`--no-tree-shake-icons`) e refatorar `OutlinedButton` para `IconButton.outlined` ou glifo SVG estatico | [PENDENTE] |
 | **B.2** | Hardening defensivo de Nginx e Rate Limiting na VM Contabo | Adicionar cabecalhos `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` e diretiva `limit_req_zone` no `nginx.conf` da VM | [PENDENTE] |
 | **B.3** | Harmonizacao do Design System com o portal institucional To de Olho | Mapear a paleta de cores e tipografia de `to-de-olho` para os tokens `AppColors` e `AppTypography`, mantendo a identidade visual unificada | [PENDENTE] |
-| **B.4** | Substituicao do favicon e icones PWA padrao do Flutter | Substituir `web/favicon.png` e icones em `web/icons/` pelo isotipo e logotipo oficiais do To de Olho | [PENDENTE] |
+| **B.4** | Substituicao de icones PWA, splash e eliminacao do logotipo Flutter | Substituir `web/favicon.png`, icones em `web/icons/` e splash do PWA pelo isotipo do projeto, removendo assets do Flutter no boot e visualizador | [PENDENTE] |
 | **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [PENDENTE] |
+| **B.6** | Indicador visual assertivo de filtros ativos (badge e destaque) | Adicionar indicador numerico (badge) no botao de filtros e destacar escolhas ativas no modal e na barra superior | [PENDENTE] |
+| **B.7** | Navegacao resiliente no PWA e botao explicito de fechar propostas | Prevenir fechamento indevido do PWA ao voltar da proposta de governo, incorporando botao de encerramento e controle de historico com PopScope | [PENDENTE] |
+| **B.8** | Reavaliacao ergonomica do botao de atualizacao (Pull-to-Refresh) | Auditar a redundancia do botao fixo de atualizacao na AppBar, substituindo-o por Pull-to-Refresh na listagem | [PENDENTE] |
+| **B.9** | Alternancia explicita de temas (Claro/Escuro) e persistencia | Implementar seletor acessivel de tema na interface com persistencia local da preferencia (Claro, Escuro, Sistema) | [PENDENTE] |
+| **B.10** | Filtragem multipartidaria simultanea (multi-select de partidos) | Expandir o BLoC e o modal para permitir a selecao concomitante de multiplas legendas partidarias | [PENDENTE] |
+| **B.11** | Modulo comparador analitico direto entre candidaturas | Desenvolver tela dedicada para contrastar lado a lado patrimonio, propostas, limites de gastos e registros de 2 a 3 candidatos | [PENDENTE] |
+| **B.12** | Adequacao de metadados de instalacao do PWA (manifest e titulo) | Ajustar manifest.json e index.html com o nome oficial "Quem Votar" (eliminando o identificador tecnico quem_votar) e descricao formal | [PENDENTE] |
+
+---
+
+### 4.1 Detalhamento Tecnico dos Itens de Refinamento e Usabilidade
+
+#### `[B.4]` Substituicao Integral de Icones PWA, Splash Screen e Logotipo Padrao do Flutter
+* **Contexto e Problema:** Ao executar a aplicacao web ou instala-la como Progressive Web App (PWA), o icone padrao do framework Flutter e exibido na inicializacao (splash), no cabecalho da janela e ao abrir visualizadores de documentos (propostas de governo).
+* **Solucao de Engenharia:**
+  1. Gerar e substituir o conjunto de icones em [web/icons/](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/icons) (`Icon-192.png`, `Icon-512.png`, `Icon-maskable-192.png`, `Icon-maskable-512.png`) e [web/favicon.png](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/favicon.png) com os assets oficiais do projeto civico.
+  2. Ajustar os marcadores `<link rel="apple-touch-icon">` e `<link rel="icon">` em [web/index.html](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/index.html).
+  3. Revisar o visualizador de documentos para evitar o disparo de fallbacks que renderizem o icone generico da engine.
+* **Criterios de Aceite:** Ausencia completa de simbolos ou graficos padrao do Flutter durante a inicializacao, navegacao e inspecao de metadados do PWA.
+
+#### `[B.6]` Indicador Visual Assertivo de Filtros Ativos (Badge Numerico e Destaque)
+* **Contexto e Problema:** Ao selecionar parametros no modal de filtros ([CandidateFilterBottomSheet](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_filter_bottom_sheet.dart)), a interface principal nao evidencia de forma destacada e imediata a aplicacao dos filtros, dificultando a compreensao do eleitor sobre quais restricoes estao ativas.
+* **Solucao de Engenharia:**
+  1. Adicionar contador numerico contextual (*badge* sobreposto) no botao de filtros em [CandidateListPage](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/pages/candidate_list_page.dart), exibindo a quantidade total de criterios customizados aplicados.
+  2. Reforcar os estados visuais selecionados dentro do modal (`ChoiceChip` com marcadores de selecao `Icons.check`, cor de fundo tonal e borda de alto contraste).
+  3. Garantir sincronizacao dinamica com [CandidateActiveFilterBar](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_active_filter_bar.dart) para exibicao imediata dos chips removiveis no topo da listagem.
+* **Criterios de Aceite:** Contraste minimo de 4,5:1 (WCAG 2.1 AA), visibilidade imediata da contagem de filtros na barra de ferramentas e suporte a rotulagem semantica para leitores de tela.
+
+#### `[B.7]` Navegacao Resiliente no PWA e Botao Explicito de Fechar Propostas
+* **Contexto e Problema:** No modo PWA em dispositivos moveis (janela *standalone*), ao acessar o documento PDF da proposta de governo por meio do servico [UrlLauncherService](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/core/network/url_launcher_service.dart), a utilizacao do gesto ou botao "voltar" nativo do sistema operacional provoca o encerramento da aplicacao em vez de retornar a ficha do candidato.
+* **Solucao de Engenharia:**
+  1. Implementar interceptacao defensiva de rotas via `PopScope` no Flutter para navegacao na web/PWA.
+  2. Disponibilizar modal interno acessivel ou visualizador com barra superior contendo botao de fechamento explicito (*Close/Voltar* com `Icons.close`), mantendo o historico do navegador isolado da janela principal da aplicacao.
+  3. No caso de abertura externa, utilizar configuracao segura que previna o descarte da sessao PWA ativa.
+* **Criterios de Aceite:** O retorno a partir do plano de governo restaura a ficha do candidato sem fechar o PWA em plataformas Android, iOS e desktop.
+
+#### `[B.8]` Reavaliacao Ergonomica do Botao de Atualizacao (Pull-to-Refresh)
+* **Contexto e Problema:** A presenca de um botao de recarga manual na `AppBar` ocupa espaco util de tela e pode ser redundante, uma vez que a arquitetura do aplicativo opera sob o paradigma *Stale-While-Revalidate* (SWR) com atualizacao automatica em segundo plano.
+* **Solucao de Engenharia:**
+  1. Conduzir auditoria de usabilidade para despoluir o cabecalho da aplicacao.
+  2. Adotar o componente `RefreshIndicator` (*Pull-to-Refresh*) nas listagens de rolagem ([CandidateListPage](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/pages/candidate_list_page.dart) e [CandidateDetailPage](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/pages/candidate_detail_page.dart)).
+  3. Manter a acao manual de repeticao apenas em telas de erro ou aviso de indisponibilidade de conexao.
+* **Criterios de Aceite:** Atualizacao de dados plenamente acessivel via gesto de arraste para baixo e remocao de controles superfluos na barra superior.
+
+#### `[B.9]` Alternancia Explicita de Temas (Claro e Escuro) com Persistencia Local
+* **Contexto e Problema:** A aplicacao possui tokens de cores semanticas definidos para os modos Claro e Escuro ([AppSemanticColors](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/theme/app_semantic_colors.dart)), porem nao disponibiliza controle na interface para alternancia voluntaria pelo usuario, restringindo-se a deteccao automatica do sistema operacional.
+* **Solucao de Engenharia:**
+  1. Implementar gerenciador de estado de tema (`ThemeBloc` ou `ThemeCubit`) com os estados `ThemeMode.system`, `ThemeMode.light` e `ThemeMode.dark`.
+  2. Persistir a selecao do eleitor em armazenamento local (Drift/SQLite ou preferencias do navegador).
+  3. Incorporar botao/alternador acessivel no cabecalho ou menu de opcoes da aplicacao, provendo feedback sonoro/semantico sobre o modo ativo.
+* **Criterios de Aceite:** Transicao suave entre temas sem reconstrucoes redundantes de arvore e preservacao da conformidade de contraste WCAG 2.1 AA em ambas as configuracoes.
+
+#### `[B.10]` Filtragem Multipartidaria Simultanea (Selecao Multipla de Partidos)
+* **Contexto e Problema:** O filtro partidario atual suporta apenas a selecao de uma unica legenda por vez, restringindo comparacoes entre coligacoes ou blocos partidarios afins.
+* **Solucao de Engenharia:**
+  1. Evoluir [CandidateListState](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/blocs/candidate_list/candidate_list_state.dart) para substituir o campo singular `selectedParty` por `Set<String> selectedParties`.
+  2. Adaptar o predicado linear de filtragem O(N) no [CandidateListBloc](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/blocs/candidate_list/candidate_list_bloc.dart) para validar a pertinencia do candidato ao conjunto de siglas selecionadas.
+  3. Atualizar o [CandidateFilterBottomSheet](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_filter_bottom_sheet.dart) com interface de multipla selecao (chips agrupados com busca por sigla ou nome da federacao).
+* **Criterios de Aceite:** Capacidade de selecionar e desmarcar multiplas legendas simultaneamente, com atualizacao instantanea da listagem e cobertura de 100% nos testes unitarios do BLoC.
+
+#### `[B.11]` Modulo Comparador Analitico Direto entre Candidaturas Concorrentes
+* **Contexto e Problema:** Eleitores necessitam alternar repetidamente entre fichas individuais para cotejar patrimonio, propostas e historico de registros entre candidatos concorrentes ao mesmo cargo.
+* **Solucao de Engenharia:**
+  1. Criar fluxo de selecao comparativa na listagem principal (permitindo marcar de 2 a 3 candidatos do mesmo pleito e cargo).
+  2. Desenvolver a tela `CandidateComparisonPage` estruturada em colunas responsivas, apresentando matriz analitica de comparacao:
+     * Resumo da chapa e situacao juridica do registro.
+     * Somatorio e categorizacao discriminada de bens declarados.
+     * Limites legais de gastos fixados pelo TSE.
+     * Grau de instrucao, ocupacao declarada e acesso direto as propostas de governo.
+  3. Integrar gerenciamento de estado via `CandidateComparisonBloc` isolado e testavel.
+* **Criterios de Aceite:** Matriz responsiva compativel com telas compactas (com rolagem horizontal sincronizada) e telas expandidas, assegurando estrita neutralidade de ordenacao e exibicao.
+
+#### `[B.12]` Adequacao de Metadados de Instalacao do PWA (Manifest e Titulo)
+* **Contexto e Problema:** Ao adicionar a aplicacao a tela inicial do dispositivo, o nome atribuido ao atalho e o identificador tecnico `quem_votar` com descricao padrao de template gerado pelo Flutter (`"A new Flutter project."`).
+* **Solucao de Engenharia:**
+  1. Atualizar [web/manifest.json](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/manifest.json):
+     * `"name": "Quem Votar | Transparência e Dados Oficiais do TSE"`
+     * `"short_name": "Quem Votar"`
+     * `"description": "Consulta pública, transparente e acessível a candidaturas, patrimônio e dados eleitorais oficiais do Tribunal Superior Eleitoral (TSE)."`
+     * `"background_color": "#F8FAFC"`
+     * `"theme_color": "#1E40AF"`
+  2. Sincronizar metatags em [web/index.html](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/index.html) (`apple-mobile-web-app-title`, `title` e descricoes semanticas).
+* **Criterios de Aceite:** Instalacao em dispositivo movel e desktop exibindo o rotulo institucional "Quem Votar" com descricao e paleta visual oficiais.
+
 
