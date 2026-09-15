@@ -280,3 +280,15 @@ Toda tarefa deve:
 * **Objetivo:** Otimizar o micro-proxy Node.js (`proxy.mjs`) com streaming assincrono (`Readable.fromWeb`) para prevenir saturacao de memoria RAM no download concorrente de PDFs e criar a skill `.agents/skills/security-hardening` com padroes de DevSecOps, Nginx hardening, seguranca em Docker/VM e conformidade LGPD.
 * **Criterio de Aceite:** Streaming operando sem buffers inteiros em memoria e arquivo `SKILL.md` homologado.
 
+---
+
+## 4. Backlog de Aprimoramentos e Refinamentos (A Fazer Depois)
+
+| Codigo | Item de Refinamento / Demanda Registrada | Escopo Tecnico e Solucao Planejada | Status |
+|---|---|---|---|
+| **B.1** | Correcao definitiva da exibicao do icone do botao de filtros no Web | Investigar o tree-shaking de fontes de icones no Flutter Web (`--no-tree-shake-icons`) e refatorar `OutlinedButton` para `IconButton.outlined` ou glifo SVG estatico | [PENDENTE] |
+| **B.2** | Hardening defensivo de Nginx e Rate Limiting na VM Contabo | Adicionar cabecalhos `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` e diretiva `limit_req_zone` no `nginx.conf` da VM | [PENDENTE] |
+| **B.3** | Harmonizacao do Design System com o portal institucional To de Olho | Mapear a paleta de cores e tipografia de `to-de-olho` para os tokens `AppColors` e `AppTypography`, mantendo a identidade visual unificada | [PENDENTE] |
+| **B.4** | Substituicao do favicon e icones PWA padrao do Flutter | Substituir `web/favicon.png` e icones em `web/icons/` pelo isotipo e logotipo oficiais do To de Olho | [PENDENTE] |
+| **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [PENDENTE] |
+
