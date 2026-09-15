@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quem_votar/core/errors/failures.dart';
+import 'package:quem_votar/core/network/url_launcher_service.dart';
 import 'package:quem_votar/domain/entities/candidate_asset.dart';
 import 'package:quem_votar/domain/entities/candidate_detail.dart';
 import 'package:quem_votar/domain/entities/registration_status.dart';
@@ -21,6 +22,17 @@ import 'package:quem_votar/presentation/widgets/candidate_detail_running_mates.d
 
 class MockCandidateDetailBloc extends MockBloc<CandidateDetailEvent, CandidateDetailState>
     implements CandidateDetailBloc {}
+
+class FakePageUrlLauncherService implements UrlLauncherService {
+  String? openedUrl;
+  bool shouldSucceed = true;
+
+  @override
+  Future<bool> launchCandidateUrl(String rawUrl) async {
+    openedUrl = rawUrl;
+    return shouldSucceed;
+  }
+}
 
 void main() {
   late MockCandidateDetailBloc mockDetailBloc;
@@ -102,6 +114,7 @@ void main() {
     CandidateDetailBloc? bloc,
     VoidCallback? onBack,
     VoidCallback? onOpenProposal,
+    UrlLauncherService? urlLauncherService,
     TextScaler textScaler = TextScaler.noScaling,
   }) {
     return MaterialApp(
@@ -112,6 +125,7 @@ void main() {
           candidateDetailBloc: bloc ?? mockDetailBloc,
           onBack: onBack,
           onOpenProposal: onOpenProposal,
+          urlLauncherService: urlLauncherService ?? const DefaultUrlLauncherService(),
         ),
       ),
     );
@@ -297,6 +311,32 @@ void main() {
       await tester.pump();
 
       expect(proposalOpened, isTrue);
+    });
+
+    testWidgets('deve disparar urlLauncherService quando onOpenProposal nao for fornecido', (
+      tester,
+    ) async {
+      final fakeLauncher = FakePageUrlLauncherService();
+      when(() => mockDetailBloc.state).thenReturn(
+        CandidateDetailState.initial().copyWith(
+          status: CandidateDetailStatus.success,
+          candidateDetail: () => mockDetail,
+          sortedAssets: mockAssets,
+          totalAssetsAmount: 792091.02,
+        ),
+      );
+
+      await tester.pumpWidget(buildTestApp(urlLauncherService: fakeLauncher));
+      await tester.pumpAndSettle();
+
+      final proposalBtn = find.text('Acessar Proposta de Governo (PDF)');
+      expect(proposalBtn, findsOneWidget);
+      await tester.ensureVisible(proposalBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(proposalBtn);
+      await tester.pump();
+
+      expect(fakeLauncher.openedUrl, equals(mockDetail.proposalDocumentUrl));
     });
   });
 

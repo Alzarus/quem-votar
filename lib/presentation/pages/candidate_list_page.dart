@@ -150,10 +150,6 @@ class _CandidateListView extends StatelessWidget {
               selectedUf: filterState.selectedUf,
               onUfChanged: (uf) =>
                   context.read<ElectionFilterBloc>().add(ElectionFilterUfChanged(uf)),
-              availableRoles: filterState.availableRoles,
-              selectedRole: filterState.selectedRole,
-              onRoleChanged: (role) =>
-                  context.read<ElectionFilterBloc>().add(ElectionFilterRoleChanged(role)),
               selectedSortOption: listState.sortOption,
               onSortOptionChanged: (sort) =>
                   context.read<CandidateListBloc>().add(CandidateListSortOptionChanged(sort)),
@@ -186,6 +182,7 @@ class _CandidateListView extends StatelessWidget {
     return BlocBuilder<CandidateListBloc, CandidateListState>(
       buildWhen: (prev, curr) =>
           prev.searchQuery != curr.searchQuery ||
+          prev.hasActiveFilters != curr.hasActiveFilters ||
           prev.activeFiltersCount != curr.activeFiltersCount,
       builder: (context, state) {
         return Row(
@@ -214,31 +211,34 @@ class _CandidateListView extends StatelessWidget {
       button: true,
       label:
           'Abrir painel de filtros multicritério. ${hasFilters ? '$count filtros ativos.' : 'Nenhum filtro ativo.'}',
-      child: Badge(
-        isLabelVisible: hasFilters,
-        label: Text('$count'),
-        backgroundColor: semantic.brandPrimary,
-        textColor: semantic.surfaceCard,
-        child: SizedBox(
-          width: 48.0,
-          height: 48.0,
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.zero,
-              backgroundColor: hasFilters
-                  ? semantic.brandPrimary.withValues(alpha: 0.1)
-                  : semantic.surfaceCard,
-              side: BorderSide(
-                color: hasFilters ? semantic.brandPrimary : semantic.borderSubtle,
-                width: hasFilters ? 1.5 : 1.0,
+      child: Tooltip(
+        message: 'Filtrar candidaturas',
+        child: Badge(
+          isLabelVisible: hasFilters,
+          label: Text('$count'),
+          backgroundColor: semantic.brandPrimary,
+          textColor: semantic.surfaceCard,
+          child: SizedBox(
+            width: 48.0,
+            height: 48.0,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                backgroundColor: hasFilters
+                    ? semantic.brandPrimary.withValues(alpha: 0.12)
+                    : semantic.surfaceCard,
+                side: BorderSide(
+                  color: hasFilters ? semantic.brandPrimary : semantic.borderSubtle,
+                  width: hasFilters ? 1.8 : 1.0,
+                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-            ),
-            onPressed: () => _openFilterBottomSheet(context),
-            child: Icon(
-              Icons.tune,
-              color: hasFilters ? semantic.brandPrimary : semantic.textPrimary,
-              size: 22.0,
+              onPressed: () => _openFilterBottomSheet(context),
+              child: Icon(
+                Icons.filter_alt_outlined,
+                color: hasFilters ? semantic.brandPrimary : semantic.textPrimary,
+                size: 24.0,
+              ),
             ),
           ),
         ),

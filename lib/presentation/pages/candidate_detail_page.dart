@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quem_votar/core/network/url_launcher_service.dart';
 import 'package:quem_votar/domain/entities/candidate_detail.dart';
 import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_bloc.dart';
 import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_event.dart';
@@ -22,12 +23,14 @@ class CandidateDetailPage extends StatelessWidget {
   final CandidateDetailBloc? candidateDetailBloc;
   final VoidCallback? onBack;
   final VoidCallback? onOpenProposal;
+  final UrlLauncherService urlLauncherService;
 
   const CandidateDetailPage({
     super.key,
     this.candidateDetailBloc,
     this.onBack,
     this.onOpenProposal,
+    this.urlLauncherService = const DefaultUrlLauncherService(),
   });
 
   @override
@@ -35,18 +38,27 @@ class CandidateDetailPage extends StatelessWidget {
     if (candidateDetailBloc != null) {
       return BlocProvider<CandidateDetailBloc>.value(
         value: candidateDetailBloc!,
-        child: _CandidateDetailView(onBack: onBack, onOpenProposal: onOpenProposal),
+        child: _CandidateDetailView(
+          onBack: onBack,
+          onOpenProposal: onOpenProposal,
+          urlLauncherService: urlLauncherService,
+        ),
       );
     }
-    return _CandidateDetailView(onBack: onBack, onOpenProposal: onOpenProposal);
+    return _CandidateDetailView(
+      onBack: onBack,
+      onOpenProposal: onOpenProposal,
+      urlLauncherService: urlLauncherService,
+    );
   }
 }
 
 class _CandidateDetailView extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenProposal;
+  final UrlLauncherService urlLauncherService;
 
-  const _CandidateDetailView({this.onBack, this.onOpenProposal});
+  const _CandidateDetailView({this.onBack, this.onOpenProposal, required this.urlLauncherService});
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +175,7 @@ class _CandidateDetailView extends StatelessWidget {
           const SizedBox(height: AppSpacing.spaceSm),
           CandidateDetailProposalCard(
             proposalDocumentUrl: detail.proposalDocumentUrl,
-            onOpenProposal: onOpenProposal,
+            onOpenProposal: () => _handleOpenProposal(context, detail.proposalDocumentUrl),
           ),
           const SizedBox(height: AppSpacing.spaceSm),
           CandidateDetailCivilData(candidateDetail: detail),
@@ -200,5 +212,21 @@ class _CandidateDetailView extends StatelessWidget {
 
   void _handleSortOptionChanged(BuildContext context, CandidateAssetSortOption option) {
     context.read<CandidateDetailBloc>().add(CandidateDetailAssetSortOptionChanged(option));
+  }
+
+  Future<void> _handleOpenProposal(BuildContext context, String? proposalUrl) async {
+    if (onOpenProposal != null) {
+      onOpenProposal!();
+      return;
+    }
+    if (proposalUrl == null || proposalUrl.trim().isEmpty) {
+      return;
+    }
+    final success = await urlLauncherService.launchCandidateUrl(proposalUrl);
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o documento da proposta de governo.')),
+      );
+    }
   }
 }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:quem_votar/domain/entities/election_role.dart';
 import 'package:quem_votar/domain/entities/federative_unit.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_state.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 import 'package:quem_votar/presentation/theme/app_spacing.dart';
 import 'package:quem_votar/presentation/theme/app_typography.dart';
 
-/// Barra de selecao de parametros territoriais, de cargo e ordenacao neutra.
+/// Barra de selecao de parametros territoriais e ordenacao neutra.
 ///
 /// Atende integralmente a WCAG 2.1 AA com alvos minimos de 48dp,
 /// rotulacao semantica compulsoria e adaptabilidade por largura.
@@ -14,10 +13,6 @@ class CandidateFilterToolbar extends StatelessWidget {
   final List<FederativeUnit> availableUfs;
   final FederativeUnit? selectedUf;
   final ValueChanged<FederativeUnit> onUfChanged;
-
-  final List<ElectionRole> availableRoles;
-  final ElectionRole? selectedRole;
-  final ValueChanged<ElectionRole> onRoleChanged;
 
   final CandidateSortOption selectedSortOption;
   final ValueChanged<CandidateSortOption> onSortOptionChanged;
@@ -27,9 +22,6 @@ class CandidateFilterToolbar extends StatelessWidget {
     required this.availableUfs,
     required this.selectedUf,
     required this.onUfChanged,
-    required this.availableRoles,
-    required this.selectedRole,
-    required this.onRoleChanged,
     required this.selectedSortOption,
     required this.onSortOptionChanged,
   });
@@ -50,19 +42,11 @@ class CandidateFilterToolbar extends StatelessWidget {
   }
 
   Widget _buildCompactLayout(AppSemanticColors semantic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(child: _buildUfDropdown(semantic)),
-            const SizedBox(width: AppSpacing.spaceXs),
-            Expanded(flex: 2, child: _buildRoleDropdown(semantic)),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.spaceXs),
-        _buildSortDropdown(semantic),
+        Expanded(flex: 4, child: _buildUfDropdown(semantic)),
+        const SizedBox(width: AppSpacing.spaceXs),
+        Expanded(flex: 5, child: _buildSortDropdown(semantic)),
       ],
     );
   }
@@ -70,11 +54,9 @@ class CandidateFilterToolbar extends StatelessWidget {
   Widget _buildWideLayout(AppSemanticColors semantic) {
     return Row(
       children: [
-        Expanded(flex: 2, child: _buildUfDropdown(semantic)),
+        Expanded(flex: 1, child: _buildUfDropdown(semantic)),
         const SizedBox(width: AppSpacing.spaceSm),
-        Expanded(flex: 3, child: _buildRoleDropdown(semantic)),
-        const SizedBox(width: AppSpacing.spaceSm),
-        Expanded(flex: 3, child: _buildSortDropdown(semantic)),
+        Expanded(flex: 1, child: _buildSortDropdown(semantic)),
       ],
     );
   }
@@ -102,35 +84,6 @@ class CandidateFilterToolbar extends StatelessWidget {
       value: uf,
       child: Text(
         '${uf.acronym} - ${uf.name}',
-        style: AppTypography.bodyMedium.copyWith(color: semantic.textPrimary),
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildRoleDropdown(AppSemanticColors semantic) {
-    return Semantics(
-      label: 'Selecionar cargo oficial em disputa',
-      child: InputDecorator(
-        decoration: _buildDropdownDecoration(semantic, label: 'Cargo'),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<ElectionRole>(
-            value: selectedRole,
-            isDense: true,
-            isExpanded: true,
-            items: availableRoles.map((role) => _buildRoleMenuItem(role, semantic)).toList(),
-            onChanged: (newRole) => _onRoleSelected(newRole),
-          ),
-        ),
-      ),
-    );
-  }
-
-  DropdownMenuItem<ElectionRole> _buildRoleMenuItem(ElectionRole role, AppSemanticColors semantic) {
-    return DropdownMenuItem<ElectionRole>(
-      value: role,
-      child: Text(
-        role.title,
         style: AppTypography.bodyMedium.copyWith(color: semantic.textPrimary),
         overflow: TextOverflow.ellipsis,
       ),
@@ -196,10 +149,6 @@ class CandidateFilterToolbar extends StatelessWidget {
 
   void _onUfSelected(FederativeUnit? uf) {
     if (uf != null) onUfChanged(uf);
-  }
-
-  void _onRoleSelected(ElectionRole? role) {
-    if (role != null) onRoleChanged(role);
   }
 
   void _onSortSelected(CandidateSortOption? sort) {

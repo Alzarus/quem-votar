@@ -129,6 +129,8 @@ Toda tarefa deve:
 | T8.1   | Preloader nativo HTML/CSS em web/index.html e PWA meta tags | [CONCLUIDO]    |
 | T8.2   | Expansao do CandidateListState e BLoC com filtros status/bens| [CONCLUIDO]    |
 | T8.3   | Componentes CandidateRoleSelectorPills, FilterSheet e Bar   | [CONCLUIDO]    |
+| T8.4   | UrlLauncherService, remocao de dropdown e novo icone filtro | [CONCLUIDO]    |
+| T8.5   | Hardening de infraestrutura e criacao da skill de seguranca | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
 ```
 
@@ -269,4 +271,12 @@ Toda tarefa deve:
 #### `[T8.3]` Componentes de Alta Densidade e Ergonomia (WCAG 2.1 AA)
 * **Objetivo:** Implementar `CandidateRoleSelectorPills` (alternancia de cargos em 1 toque), `CandidateFilterBottomSheet` (modal ergonômico) e `CandidateActiveFilterBar` (chips com remocao individual).
 * **Criterio de Aceite:** Alvos de toque >= 48dp, anotacoes `Semantics` completas e retencao de rolagem via `PageStorageKey`.
+
+#### `[T8.4]` Integracao de UrlLauncherService, Remocao de Dropdown e Novo Icone de Filtro
+* **Objetivo:** Implementar o servico multiplataforma `UrlLauncherService` desacoplado para abertura de propostas de governo (PDF), conectar fallback em `CandidateDetailPage`, remover a duplicidade de dropdown de cargos no `CandidateFilterToolbar` (preservando `CandidateRoleSelectorPills`) e atualizar o icone do botao de filtros para `Icons.filter_alt_outlined` com tooltip.
+* **Criterio de Aceite:** 100% de cobertura nos testes de unidade e widget, acionamento do launcher validado sem erros e harness aprovado.
+
+#### `[T8.5]` Streaming HTTP no Micro-Proxy e Skill de Hardening de Seguranca
+* **Objetivo:** Otimizar o micro-proxy Node.js (`proxy.mjs`) com streaming assincrono (`Readable.fromWeb`) para prevenir saturacao de memoria RAM no download concorrente de PDFs e criar a skill `.agents/skills/security-hardening` com padroes de DevSecOps, Nginx hardening, seguranca em Docker/VM e conformidade LGPD.
+* **Criterio de Aceite:** Streaming operando sem buffers inteiros em memoria e arquivo `SKILL.md` homologado.
 

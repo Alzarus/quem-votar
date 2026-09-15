@@ -1,4 +1,5 @@
 import http from 'http';
+import { Readable } from 'stream';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const TSE_ORIGIN = 'https://divulgacandcontas.tse.jus.br';
@@ -52,8 +53,11 @@ const server = http.createServer(async (req, res) => {
     };
 
     res.writeHead(upstream.status, responseHeaders);
-    const arrayBuffer = await upstream.arrayBuffer();
-    res.end(Buffer.from(arrayBuffer));
+    if (upstream.body) {
+      Readable.fromWeb(upstream.body).pipe(res);
+    } else {
+      res.end();
+    }
   } catch (err) {
     const duration = Date.now() - startTime;
     console.error(`[PROXY ERRO] ${req.method} ${pathname} -> ${err.message} (${duration}ms)`);

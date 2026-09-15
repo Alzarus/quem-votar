@@ -290,6 +290,22 @@ void main() {
 
       verify(() => mockListBloc.add(any())).called(greaterThanOrEqualTo(1));
     });
+
+    testWidgets('deve exibir botao de filtros com icone filter_alt_outlined e tooltip', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      final filterBtn = find.byTooltip('Filtrar candidaturas');
+      expect(filterBtn, findsOneWidget);
+      expect(find.byIcon(Icons.filter_alt_outlined), findsOneWidget);
+
+      await tester.tap(filterBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Filtros de Candidaturas'), findsOneWidget);
+    });
   });
 
   group('CandidateListPage - Acessibilidade WCAG 2.1 AA', () {
