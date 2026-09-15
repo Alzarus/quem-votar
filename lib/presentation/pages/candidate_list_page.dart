@@ -14,15 +14,18 @@ import 'package:quem_votar/presentation/pages/candidate_detail_page.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 import 'package:quem_votar/presentation/theme/app_spacing.dart';
 import 'package:quem_votar/presentation/theme/app_typography.dart';
+import 'package:quem_votar/presentation/widgets/candidate_active_filter_bar.dart';
 import 'package:quem_votar/presentation/widgets/candidate_adaptive_grid.dart';
+import 'package:quem_votar/presentation/widgets/candidate_filter_bottom_sheet.dart';
 import 'package:quem_votar/presentation/widgets/candidate_filter_toolbar.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_feedback_views.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_search_input.dart';
+import 'package:quem_votar/presentation/widgets/candidate_role_selector_pills.dart';
 
 /// Pagina principal de consulta e acompanhamento civico de candidaturas oficiais.
 ///
-/// Implementa leiaute adaptativo responsivo em 1, 2 e 3 colunas, sincronizacao
-/// automatica entre filtros e listagem, e conformidade WCAG 2.1 AA.
+/// Implementa leiaute adaptativo responsivo em 1, 2 e 3 colunas, selecao rapida de
+/// cargos em 1 toque, filtros multicriterio e conformidade WCAG 2.1 AA.
 class CandidateListPage extends StatelessWidget {
   final ElectionFilterBloc? electionFilterBloc;
   final CandidateListBloc? candidateListBloc;
@@ -75,8 +78,11 @@ class _CandidateListView extends StatelessWidget {
                 children: [
                   const SizedBox(height: AppSpacing.spaceSm),
                   _buildFilterSection(context),
+                  const SizedBox(height: AppSpacing.spaceXs),
+                  _buildRolePillsSection(context),
                   const SizedBox(height: AppSpacing.spaceSm),
                   _buildSearchSection(context),
+                  _buildActiveFiltersSection(context),
                   const SizedBox(height: AppSpacing.spaceXs),
                   _buildStatusHeader(context, semantic),
                   const SizedBox(height: AppSpacing.space2xs),
@@ -158,14 +164,129 @@ class _CandidateListView extends StatelessWidget {
     );
   }
 
+  Widget _buildRolePillsSection(BuildContext context) {
+    return BlocBuilder<ElectionFilterBloc, ElectionFilterState>(
+      buildWhen: (prev, curr) =>
+          prev.availableRoles != curr.availableRoles || prev.selectedRole != curr.selectedRole,
+      builder: (context, state) {
+        if (state.availableRoles.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return CandidateRoleSelectorPills(
+          availableRoles: state.availableRoles,
+          selectedRole: state.selectedRole,
+          onRoleSelected: (role) =>
+              context.read<ElectionFilterBloc>().add(ElectionFilterRoleChanged(role)),
+        );
+      },
+    );
+  }
+
   Widget _buildSearchSection(BuildContext context) {
     return BlocBuilder<CandidateListBloc, CandidateListState>(
-      buildWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
+      buildWhen: (prev, curr) =>
+          prev.searchQuery != curr.searchQuery ||
+          prev.activeFiltersCount != curr.activeFiltersCount,
       builder: (context, state) {
-        return CandidateListSearchInput(
-          initialQuery: state.searchQuery,
-          onQueryChanged: (query) =>
-              context.read<CandidateListBloc>().add(CandidateListSearchQueryChanged(query)),
+        return Row(
+          children: [
+            Expanded(
+              child: CandidateListSearchInput(
+                initialQuery: state.searchQuery,
+                onQueryChanged: (query) =>
+                    context.read<CandidateListBloc>().add(CandidateListSearchQueryChanged(query)),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.spaceXs),
+            _buildFilterModalButton(context, state),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterModalButton(BuildContext context, CandidateListState state) {
+    final semantic = context.semanticColors;
+    final hasFilters = state.hasActiveFilters;
+    final count = state.activeFiltersCount;
+
+    return Semantics(
+      button: true,
+      label:
+          'Abrir painel de filtros multicritério. ${hasFilters ? '$count filtros ativos.' : 'Nenhum filtro ativo.'}',
+      child: Badge(
+        isLabelVisible: hasFilters,
+        label: Text('$count'),
+        backgroundColor: semantic.brandPrimary,
+        textColor: semantic.surfaceCard,
+        child: SizedBox(
+          width: 48.0,
+          height: 48.0,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              backgroundColor: hasFilters
+                  ? semantic.brandPrimary.withValues(alpha: 0.1)
+                  : semantic.surfaceCard,
+              side: BorderSide(
+                color: hasFilters ? semantic.brandPrimary : semantic.borderSubtle,
+                width: hasFilters ? 1.5 : 1.0,
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+            ),
+            onPressed: () => _openFilterBottomSheet(context),
+            child: Icon(
+              Icons.tune,
+              color: hasFilters ? semantic.brandPrimary : semantic.textPrimary,
+              size: 22.0,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openFilterBottomSheet(BuildContext context) {
+    final listBloc = context.read<CandidateListBloc>();
+    final state = listBloc.state;
+
+    CandidateFilterBottomSheet.show(
+      context: context,
+      availableParties: state.availableParties,
+      selectedParty: state.selectedParty,
+      statusFilter: state.statusFilter,
+      assetsFilter: state.assetsFilter,
+      onPartyChanged: (party) => listBloc.add(CandidateListPartyFilterChanged(party)),
+      onStatusChanged: (status) => listBloc.add(CandidateListStatusFilterChanged(status)),
+      onAssetsChanged: (assets) => listBloc.add(CandidateListAssetsFilterChanged(assets)),
+      onClearAll: () => listBloc.add(const CandidateListFiltersCleared()),
+    );
+  }
+
+  Widget _buildActiveFiltersSection(BuildContext context) {
+    return BlocBuilder<CandidateListBloc, CandidateListState>(
+      buildWhen: (prev, curr) =>
+          prev.searchQuery != curr.searchQuery ||
+          prev.selectedParty != curr.selectedParty ||
+          prev.statusFilter != curr.statusFilter ||
+          prev.assetsFilter != curr.assetsFilter,
+      builder: (context, state) {
+        if (!state.hasActiveFilters) {
+          return const SizedBox.shrink();
+        }
+        final bloc = context.read<CandidateListBloc>();
+        return CandidateActiveFilterBar(
+          searchQuery: state.searchQuery,
+          selectedParty: state.selectedParty,
+          statusFilter: state.statusFilter,
+          assetsFilter: state.assetsFilter,
+          onClearQuery: () => bloc.add(const CandidateListSearchQueryChanged('')),
+          onClearParty: () => bloc.add(const CandidateListPartyFilterChanged(null)),
+          onClearStatus: () =>
+              bloc.add(const CandidateListStatusFilterChanged(CandidateStatusFilter.all)),
+          onClearAssets: () =>
+              bloc.add(const CandidateListAssetsFilterChanged(CandidateAssetsFilter.all)),
+          onClearAll: () => bloc.add(const CandidateListFiltersCleared()),
         );
       },
     );
@@ -224,6 +345,7 @@ class _CandidateListView extends StatelessWidget {
             }
             if (state.status == CandidateListStatus.success) {
               return CandidateAdaptiveGrid(
+                key: const PageStorageKey('candidate_adaptive_grid_key'),
                 candidates: state.filteredCandidates,
                 onCandidateSelected: (candidate) => _handleCandidateSelected(context, candidate),
                 onRefresh: () async => _triggerRefresh(context),
@@ -287,6 +409,7 @@ class _CandidateListView extends StatelessWidget {
   void _clearFilters(BuildContext context) {
     context.read<CandidateListBloc>().add(const CandidateListSearchQueryChanged(''));
     context.read<CandidateListBloc>().add(const CandidateListPartyFilterChanged(null));
+    context.read<CandidateListBloc>().add(const CandidateListFiltersCleared());
   }
 
   void _handleCandidateSelected(BuildContext context, CandidateSummary candidate) {

@@ -326,5 +326,85 @@ void main() {
             ),
       ],
     );
+
+    blocTest<CandidateListBloc, CandidateListState>(
+      'deve filtrar candidatos por situacao juridica (eligibleOnly vs subJudiceOnly)',
+      build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
+      seed: () {
+        const candidateIneligible = CandidateSummary(
+          id: 4,
+          ballotNumber: 50,
+          ballotName: 'Inapto Teste',
+          fullName: 'Candidato Inapto Teste',
+          roleCode: 1,
+          roleDescription: 'Presidente',
+          partyAcronym: 'PSOL',
+          partyName: 'Partido Teste',
+          coalitionName: 'Sem coligacao',
+          photoUrl: 'https://example.com/inapto.jpg',
+          registrationStatus: RegistrationStatus.ineligible,
+          rawStatusDescription: 'Indeferido',
+          totalAssetsAmount: 100000.0,
+        );
+        final list = [...mockCandidates, candidateIneligible];
+        return CandidateListState(
+          status: CandidateListStatus.success,
+          allCandidates: list,
+          filteredCandidates: list,
+          searchQuery: '',
+          sortOption: CandidateSortOption.alphabetical,
+        );
+      },
+      act: (bloc) =>
+          bloc.add(const CandidateListStatusFilterChanged(CandidateStatusFilter.eligibleOnly)),
+      expect: () => [
+        isA<CandidateListState>()
+            .having((s) => s.statusFilter, 'statusFilter', CandidateStatusFilter.eligibleOnly)
+            .having((s) => s.filteredCount, 'filteredCount', 3),
+      ],
+    );
+
+    blocTest<CandidateListBloc, CandidateListState>(
+      'deve filtrar candidatos por faixa patrimonial',
+      build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
+      seed: () => const CandidateListState(
+        status: CandidateListStatus.success,
+        allCandidates: mockCandidates,
+        filteredCandidates: mockCandidates,
+        searchQuery: '',
+        sortOption: CandidateSortOption.alphabetical,
+      ),
+      act: (bloc) =>
+          bloc.add(const CandidateListAssetsFilterChanged(CandidateAssetsFilter.above1M)),
+      expect: () => [
+        isA<CandidateListState>()
+            .having((s) => s.assetsFilter, 'assetsFilter', CandidateAssetsFilter.above1M)
+            .having((s) => s.filteredCount, 'filteredCount', 3),
+      ],
+    );
+
+    blocTest<CandidateListBloc, CandidateListState>(
+      'deve redefinir e limpar integralmente todos os filtros aplicados',
+      build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
+      seed: () => const CandidateListState(
+        status: CandidateListStatus.success,
+        allCandidates: mockCandidates,
+        filteredCandidates: [candidateA],
+        searchQuery: 'Lula',
+        selectedParty: 'PT',
+        statusFilter: CandidateStatusFilter.eligibleOnly,
+        assetsFilter: CandidateAssetsFilter.above1M,
+        sortOption: CandidateSortOption.alphabetical,
+      ),
+      act: (bloc) => bloc.add(const CandidateListFiltersCleared()),
+      expect: () => [
+        isA<CandidateListState>()
+            .having((s) => s.searchQuery, 'searchQuery limpa', '')
+            .having((s) => s.selectedParty, 'partido limpo', isNull)
+            .having((s) => s.statusFilter, 'status limpo', CandidateStatusFilter.all)
+            .having((s) => s.assetsFilter, 'patrimonio limpo', CandidateAssetsFilter.all)
+            .having((s) => s.filteredCount, 'todos retornados', 3),
+      ],
+    );
   });
 }

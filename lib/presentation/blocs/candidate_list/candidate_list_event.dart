@@ -63,3 +63,28 @@ final class CandidateListSortOptionChanged extends CandidateListEvent {
   @override
   List<Object?> get props => [sortOption];
 }
+
+/// Notifica alteracao no filtro de aptidao juridica / situacao de registro.
+final class CandidateListStatusFilterChanged extends CandidateListEvent {
+  final CandidateStatusFilter statusFilter;
+
+  const CandidateListStatusFilterChanged(this.statusFilter);
+
+  @override
+  List<Object?> get props => [statusFilter];
+}
+
+/// Notifica alteracao no filtro por faixa de patrimonio declarado.
+final class CandidateListAssetsFilterChanged extends CandidateListEvent {
+  final CandidateAssetsFilter assetsFilter;
+
+  const CandidateListAssetsFilterChanged(this.assetsFilter);
+
+  @override
+  List<Object?> get props => [assetsFilter];
+}
+
+/// Notifica a redefinicao e limpeza integral de todos os filtros aplicados.
+final class CandidateListFiltersCleared extends CandidateListEvent {
+  const CandidateListFiltersCleared();
+}

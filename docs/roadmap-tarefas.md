@@ -120,6 +120,16 @@ Toda tarefa deve:
 | T7.4   | Build de producao web e deploy automatizado via SCP         | [CONCLUIDO]    |
 | T7.5   | Validacao de operacao offline (PWA) e auditoria de cache    | [CONCLUIDO]    |
 +--------+-------------------------------------------------------------+----------------+
+
++---------------------------------------------------------------------------------------+
+| FASE 8: OTIMIZACAO WEB, REDUCAO DE JORNADA E FILTROS MULTICRITERIO (UI/UX PRO)        |
++--------+-------------------------------------------------------------+----------------+
+| Codigo | Descricao e Escopo Tecnico                                  | Status         |
++--------+-------------------------------------------------------------+----------------+
+| T8.1   | Preloader nativo HTML/CSS em web/index.html e PWA meta tags | [CONCLUIDO]    |
+| T8.2   | Expansao do CandidateListState e BLoC com filtros status/bens| [CONCLUIDO]    |
+| T8.3   | Componentes CandidateRoleSelectorPills, FilterSheet e Bar   | [CONCLUIDO]    |
++--------+-------------------------------------------------------------+----------------+
 ```
 
 ---
@@ -243,3 +253,20 @@ Toda tarefa deve:
 #### `[T7.1] a [T7.5]` Configuracao da VM e Deploy de Producao
 * **Objetivo:** Criar o container `/opt/quemvotar`, configurar o Nginx Proxy Manager com SSL e validar o micro-proxy de cache em producao.
 * **Criterio de Aceite:** Aplicacao disponivel publicamente em `https://todeolho.org/quemvotar` com tempo de resposta do cache inferior a 2ms.
+
+---
+
+### Fase 8: Otimizacao de Performance Web, Reducao de Jornada e Filtros Multicriterio (UI/UX Pro)
+
+#### `[T8.1]` Preloader Nativo em HTML/CSS e Meta Tags Semanticas
+* **Objetivo:** Inserir preloader leve (< 3 KB) na paleta civica (#1E40AF) no `web/index.html` com suporte a modo escuro e transicao em `flutter-first-frame`, eliminando a tela branca inicial.
+* **Criterio de Aceite:** Carga visual em menos de 100ms e transicao suave para a aplicacao Flutter.
+
+#### `[T8.2]` Expansao de Estado no CandidateListBloc e Filtros Multicriterio
+* **Objetivo:** Implementar os enums `CandidateStatusFilter` e `CandidateAssetsFilter`, conectando-os ao pipeline linear O(N) do BLoC com testes unitarios headless cobrindo combinacoes e limpeza de filtros.
+* **Criterio de Aceite:** 100% de cobertura nos testes unitarios do BLoC com filtros combinados.
+
+#### `[T8.3]` Componentes de Alta Densidade e Ergonomia (WCAG 2.1 AA)
+* **Objetivo:** Implementar `CandidateRoleSelectorPills` (alternancia de cargos em 1 toque), `CandidateFilterBottomSheet` (modal ergonômico) e `CandidateActiveFilterBar` (chips com remocao individual).
+* **Criterio de Aceite:** Alvos de toque >= 48dp, anotacoes `Semantics` completas e retencao de rolagem via `PageStorageKey`.
+

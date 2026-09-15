@@ -15,6 +15,28 @@ enum CandidateSortOption {
   const CandidateSortOption(this.label);
 }
 
+/// Filtros de aptidao juridica para recepcao de votos validos.
+enum CandidateStatusFilter {
+  all('Todas as Situações'),
+  eligibleOnly('Apenas Aptos a Voto'),
+  subJudiceOnly('Sub Judice / Em Recurso');
+
+  final String label;
+  const CandidateStatusFilter(this.label);
+}
+
+/// Faixas de patrimonio declarado oficial perante o TSE.
+enum CandidateAssetsFilter {
+  all('Todos os Patrimônios'),
+  none('Sem Bens Declarados'),
+  upTo200k('Até R\$ 200 mil'),
+  from200kTo1M('R\$ 200 mil a R\$ 1 milhão'),
+  above1M('Acima de R\$ 1 milhão');
+
+  final String label;
+  const CandidateAssetsFilter(this.label);
+}
+
 /// Estado imutavel para o fluxo de listagem e filtragem de candidatos.
 class CandidateListState extends Equatable {
   final CandidateListStatus status;
@@ -22,6 +44,8 @@ class CandidateListState extends Equatable {
   final List<CandidateSummary> filteredCandidates;
   final String searchQuery;
   final String? selectedParty;
+  final CandidateStatusFilter statusFilter;
+  final CandidateAssetsFilter assetsFilter;
   final CandidateSortOption sortOption;
   final Failure? failure;
   final bool isRefreshing;
@@ -38,6 +62,8 @@ class CandidateListState extends Equatable {
     required this.filteredCandidates,
     required this.searchQuery,
     this.selectedParty,
+    this.statusFilter = CandidateStatusFilter.all,
+    this.assetsFilter = CandidateAssetsFilter.all,
     required this.sortOption,
     this.failure,
     this.isRefreshing = false,
@@ -54,6 +80,8 @@ class CandidateListState extends Equatable {
     filteredCandidates: [],
     searchQuery: '',
     selectedParty: null,
+    statusFilter: CandidateStatusFilter.all,
+    assetsFilter: CandidateAssetsFilter.all,
     sortOption: CandidateSortOption.alphabetical,
     failure: null,
     isRefreshing: false,
@@ -66,6 +94,8 @@ class CandidateListState extends Equatable {
     List<CandidateSummary>? filteredCandidates,
     String? searchQuery,
     String? Function()? selectedParty,
+    CandidateStatusFilter? statusFilter,
+    CandidateAssetsFilter? assetsFilter,
     CandidateSortOption? sortOption,
     Failure? Function()? failure,
     bool? isRefreshing,
@@ -80,6 +110,8 @@ class CandidateListState extends Equatable {
       filteredCandidates: filteredCandidates ?? this.filteredCandidates,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedParty: selectedParty != null ? selectedParty() : this.selectedParty,
+      statusFilter: statusFilter ?? this.statusFilter,
+      assetsFilter: assetsFilter ?? this.assetsFilter,
       sortOption: sortOption ?? this.sortOption,
       failure: failure != null ? failure() : this.failure,
       isRefreshing: isRefreshing ?? this.isRefreshing,
@@ -90,8 +122,18 @@ class CandidateListState extends Equatable {
     );
   }
 
-  /// Indica se ha filtros textuais ou de legenda aplicados.
-  bool get hasActiveFilters => searchQuery.isNotEmpty || selectedParty != null;
+  /// Quantidade absoluta de criterios de filtro aplicados.
+  int get activeFiltersCount {
+    var count = 0;
+    if (searchQuery.isNotEmpty) count++;
+    if (selectedParty != null) count++;
+    if (statusFilter != CandidateStatusFilter.all) count++;
+    if (assetsFilter != CandidateAssetsFilter.all) count++;
+    return count;
+  }
+
+  /// Indica se ha filtros textuais, de legenda, status ou patrimonio aplicados.
+  bool get hasActiveFilters => activeFiltersCount > 0;
 
   /// Indica se a busca retornou vazia apos conclusao com sucesso.
   bool get hasNoResults => status == CandidateListStatus.success && filteredCandidates.isEmpty;
@@ -120,6 +162,8 @@ class CandidateListState extends Equatable {
     filteredCandidates,
     searchQuery,
     selectedParty,
+    statusFilter,
+    assetsFilter,
     sortOption,
     failure,
     isRefreshing,
