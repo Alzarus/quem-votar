@@ -294,7 +294,7 @@ Toda tarefa deve:
 | **B.6** | Indicador visual assertivo de filtros ativos (badge e destaque) | Adicionar indicador numerico (badge) no botao de filtros e destacar escolhas ativas no modal e na barra superior | [CONCLUIDO] |
 | **B.7** | Navegacao resiliente no PWA e botao explicito de fechar propostas | Prevenir fechamento indevido do PWA ao voltar da proposta de governo, incorporando botao de encerramento e controle de historico com PopScope | [PENDENTE] |
 | **B.8** | Reavaliacao ergonomica do botao de atualizacao (Pull-to-Refresh) | Auditar a redundancia do botao fixo de atualizacao na AppBar, substituindo-o por Pull-to-Refresh na listagem | [CONCLUIDO] |
-| **B.9** | Alternancia explicita de temas (Claro/Escuro) e persistencia | Implementar seletor acessivel de tema na interface com persistencia local da preferencia (Claro, Escuro, Sistema) | [PENDENTE] |
+| **B.9** | Alternancia explicita de temas (Claro/Escuro) e persistencia | Implementar seletor acessivel de tema na interface com persistencia local da preferencia (Claro, Escuro, Sistema) | [CONCLUIDO] |
 | **B.10** | Filtragem multipartidaria simultanea (multi-select de partidos) | Expandir o BLoC e o modal para permitir a selecao concomitante de multiplas legendas partidarias | [CONCLUIDO] |
 | **B.11** | Modulo comparador analitico direto entre candidaturas | Desenvolver tela dedicada para contrastar lado a lado patrimonio, propostas, limites de gastos e registros de 2 a 3 candidatos | [PENDENTE] |
 | **B.12** | Adequacao de metadados de instalacao do PWA (manifest e titulo) | Ajustar manifest.json e index.html com o nome oficial "Quem Votar" (eliminando o identificador tecnico quem_votar) e descricao formal | [CONCLUIDO] |

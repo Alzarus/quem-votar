@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quem_votar/core/network/dio_client_factory.dart';
 import 'package:quem_votar/data/database/app_database.dart';
 import 'package:quem_votar/data/datasources/candidate_local_data_source.dart';
+import 'package:quem_votar/data/datasources/theme_preferences_data_source.dart';
 import 'package:quem_votar/data/datasources/tse_remote_data_source.dart';
 import 'package:quem_votar/data/repositories/candidate_repository_impl.dart';
 import 'package:quem_votar/data/repositories/election_repository_impl.dart';
@@ -12,6 +13,7 @@ import 'package:quem_votar/domain/usecases/get_elections_use_case.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_event.dart';
+import 'package:quem_votar/presentation/blocs/theme/theme_cubit.dart';
 import 'package:quem_votar/presentation/pages/candidate_list_page.dart';
 import 'package:quem_votar/presentation/theme/app_theme.dart';
 
@@ -68,6 +70,8 @@ class QuemVotarApp extends StatelessWidget {
   final GetElectionsUseCase? getElectionsUseCase;
   final GetCandidatesListUseCase? getCandidatesListUseCase;
   final GetCandidateDetailUseCase? getCandidateDetailUseCase;
+  final ThemeCubit? themeCubit;
+  final ThemePreferencesDataSource? themeDataSource;
 
   const QuemVotarApp({
     super.key,
@@ -75,16 +79,33 @@ class QuemVotarApp extends StatelessWidget {
     this.getElectionsUseCase,
     this.getCandidatesListUseCase,
     this.getCandidateDetailUseCase,
+    this.themeCubit,
+    this.themeDataSource,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quem Votar',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: _resolveHome(),
+    if (themeCubit != null) {
+      return BlocProvider<ThemeCubit>.value(value: themeCubit!, child: _buildAppContent());
+    }
+    return BlocProvider<ThemeCubit>(
+      create: (_) =>
+          ThemeCubit(dataSource: themeDataSource ?? const SharedPreferencesThemeDataSource()),
+      child: _buildAppContent(),
+    );
+  }
+
+  Widget _buildAppContent() {
+    return BlocBuilder<ThemeCubit, ThemeMode>(
+      builder: (context, themeMode) {
+        return MaterialApp(
+          title: 'Quem Votar',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          home: _resolveHome(),
+        );
+      },
     );
   }
 

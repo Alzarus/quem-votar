@@ -21,6 +21,7 @@ import 'package:quem_votar/presentation/widgets/candidate_filter_toolbar.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_feedback_views.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_search_input.dart';
 import 'package:quem_votar/presentation/widgets/candidate_role_selector_pills.dart';
+import 'package:quem_votar/presentation/widgets/theme_mode_button.dart';
 
 /// Pagina principal de consulta e acompanhamento civico de candidaturas oficiais.
 ///
@@ -116,6 +117,10 @@ class _CandidateListView extends StatelessWidget {
       ),
       backgroundColor: semantic.surfaceCard,
       elevation: 0.0,
+      actions: const [
+        ThemeModeButton(),
+        SizedBox(width: AppSpacing.spaceXs),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1.0),
         child: Container(color: semantic.borderSubtle, height: 1.0),
