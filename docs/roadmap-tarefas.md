@@ -288,7 +288,7 @@ Toda tarefa deve:
 |---|---|---|---|
 | **B.1** | Correcao definitiva da exibicao do icone do botao de filtros no Web | Investigar o tree-shaking de fontes de icones no Flutter Web (`--no-tree-shake-icons`) e refatorar `OutlinedButton` para `IconButton.outlined` ou glifo SVG estatico | [CONCLUIDO] |
 | **B.2** | Hardening defensivo de Nginx e Rate Limiting na VM Contabo | Adicionar cabecalhos `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` e diretiva `limit_req_zone` no `nginx.conf` da VM | [CONCLUIDO] |
-| **B.3** | Harmonizacao do Design System com o portal institucional To de Olho | Mapear a paleta de cores e tipografia de `to-de-olho` para os tokens `AppColors` e `AppTypography`, mantendo a identidade visual unificada | [PENDENTE] |
+| **B.3** | Harmonizacao do Design System com o portal institucional To de Olho | Mapear a paleta de cores e tipografia de `to-de-olho` para os tokens `AppColors` e `AppTypography`, mantendo a identidade visual unificada | [CONCLUIDO] |
 | **B.4** | Substituicao de icones PWA, splash e eliminacao do logotipo Flutter | Substituir `web/favicon.png`, icones em `web/icons/` e splash do PWA pelo isotipo do projeto, removendo assets do Flutter no boot e visualizador | [CONCLUIDO] |
 | **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [CONCLUIDO] |
 | **B.6** | Indicador visual assertivo de filtros ativos (badge e destaque) | Adicionar indicador numerico (badge) no botao de filtros e destacar escolhas ativas no modal e na barra superior | [CONCLUIDO] |
@@ -296,7 +296,7 @@ Toda tarefa deve:
 | **B.8** | Reavaliacao ergonomica do botao de atualizacao (Pull-to-Refresh) | Auditar a redundancia do botao fixo de atualizacao na AppBar, substituindo-o por Pull-to-Refresh na listagem | [CONCLUIDO] |
 | **B.9** | Alternancia explicita de temas (Claro/Escuro) e persistencia | Implementar seletor acessivel de tema na interface com persistencia local da preferencia (Claro, Escuro, Sistema) | [CONCLUIDO] |
 | **B.10** | Filtragem multipartidaria simultanea (multi-select de partidos) | Expandir o BLoC e o modal para permitir a selecao concomitante de multiplas legendas partidarias | [CONCLUIDO] |
-| **B.11** | Modulo comparador analitico direto entre candidaturas | Desenvolver tela dedicada para contrastar lado a lado patrimonio, propostas, limites de gastos e registros de 2 a 3 candidatos | [PENDENTE] |
+| **B.11** | Modulo comparador analitico direto entre candidaturas | Desenvolver tela dedicada para contrastar lado a lado patrimonio, propostas, limites de gastos e registros de 2 a 4 candidatos | [CONCLUIDO] |
 | **B.12** | Adequacao de metadados de instalacao do PWA (manifest e titulo) | Ajustar manifest.json e index.html com o nome oficial "Quem Votar" (eliminando o identificador tecnico quem_votar) e descricao formal | [CONCLUIDO] |
 
 ---
@@ -311,6 +311,14 @@ Toda tarefa deve:
   3. Desativar versao do servidor com `server_tokens off;`.
   4. Injetar cabecalhos defensivos: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` e `Strict-Transport-Security`.
 * **Criterios de Aceite:** Servidor Nginx protegido contra estouro de requisicoes com resposta 429 e cabecalhos de seguranca ativos em todas as respostas HTTP.
+
+#### `[B.3]` Harmonizacao do Design System com o Portal Institucional To de Olho
+* **Contexto e Problema:** A interface visual necessita manter coerencia estetica e ergonomica rigorosa com o portal de transparencia "To de Olho" (projeto de referencia), assegurando transicao fluida de identidade visual, contraste WCAG 2.1 AA e tokens harmonizados em escala OKLCH convertida para RGB/Hexadecimal.
+* **Solucao de Engenharia:**
+  1. Sincronizar tokens primitivos em [AppColors](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/theme/app_colors.dart) com os valores institucionais: `civic600` (`#0056A4`), `civic700` (`#003884`), `civic400` (`#0F74C5`), `gold500` (`#D9A514`), `gold600` (`#C1983A`), `surfaceLight` (`#F9FAFB`) e `surfaceDark` (`#050C13`).
+  2. Atualizar tokens semanticos em [AppSemanticColors](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/theme/app_semantic_colors.dart) e esquemas de tema em [AppTheme](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/theme/app_theme.dart), incorporando `accentGold` e mantendo razao de contraste minima de 4,5:1.
+  3. Sincronizar preloader nativo e cores de tema em [web/index.html](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/web/index.html).
+* **Criterios de Aceite:** Conformidade cromatica estrita com o portal To de Olho, validacao visual em modos Claro e Escuro sem quebra de contraste e preloader web integrado.
 
 #### `[B.5]` Seletor de Ano e Pleito Eleitoral Historico na Interface
 * **Contexto e Problema:** A aplicacao possuia suporte nativo no BLoC e na API do TSE para carregar diferentes pleitos (2026, 2024, 2022...), mas a interface nao disponibilizava o dropdown correspondente ao usuario na barra de ferramentas.
@@ -372,14 +380,15 @@ Toda tarefa deve:
 #### `[B.11]` Modulo Comparador Analitico Direto entre Candidaturas Concorrentes
 * **Contexto e Problema:** Eleitores necessitam alternar repetidamente entre fichas individuais para cotejar patrimonio, propostas e historico de registros entre candidatos concorrentes ao mesmo cargo.
 * **Solucao de Engenharia:**
-  1. Criar fluxo de selecao comparativa na listagem principal (permitindo marcar de 2 a 3 candidatos do mesmo pleito e cargo).
-  2. Desenvolver a tela `CandidateComparisonPage` estruturada em colunas responsivas, apresentando matriz analitica de comparacao:
-     * Resumo da chapa e situacao juridica do registro.
-     * Somatorio e categorizacao discriminada de bens declarados.
-     * Limites legais de gastos fixados pelo TSE.
-     * Grau de instrucao, ocupacao declarada e acesso direto as propostas de governo.
-  3. Integrar gerenciamento de estado via `CandidateComparisonBloc` isolado e testavel.
-* **Criterios de Aceite:** Matriz responsiva compativel com telas compactas (com rolagem horizontal sincronizada) e telas expandidas, assegurando estrita neutralidade de ordenacao e exibicao.
+  1. Implementacao do gerenciador de estado [CandidateComparisonBloc](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/blocs/candidate_comparison/candidate_comparison_bloc.dart) com suporte a selecao concorrente de 2 a 4 candidatos, validacao defensiva de homogeneidade de cargo e carregamento assincrono concorrente de detalhes (`Future.wait`).
+  2. Integracao do botao de alternancia comparativa em [CandidateCard](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_card.dart) com suporte a Semantics e alvo de toque >= 48dp.
+  3. Dock flutuante inferior [CandidateComparisonDock](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_comparison_dock.dart) com contagem, miniaturas com botao de exclusao individual, acao de limpeza e botao de navegacao direta.
+  4. Tela analitica [CandidateComparisonPage](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/pages/candidate_comparison_page.dart) organizada em `TabBar` responsiva com 4 dimensoes de analise:
+     * Visao Geral: chapa, composicao de coligacao, situacao juridica e suplentes/vice.
+     * Patrimonio: total de bens, contagem de itens declarados e maior bem registrado.
+     * Gastos e Perfil: limites legais de gastos do TSE (1º e 2º turnos), grau de instrucao, ocupacao e estado civil.
+     * Propostas: acesso e cotejo direto das propostas oficiais de governo via modal [CandidateProposalModal](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_proposal_modal.dart).
+* **Criterios de Aceite:** Matriz responsiva compativel com telas compactas e expandidas, estrita neutralidade partidaria (ordem cronologica de selecao mantida sem favorecimento), 100% de cobertura em testes unitarios e de widgets.
 
 #### `[B.12]` Adequacao de Metadados de Instalacao do PWA (Manifest e Titulo)
 * **Contexto e Problema:** Ao adicionar a aplicacao a tela inicial do dispositivo, o nome atribuido ao atalho e o identificador tecnico `quem_votar` com descricao padrao de template gerado pelo Flutter (`"A new Flutter project."`).

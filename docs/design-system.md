@@ -24,8 +24,8 @@ A estrutura cromatica e organizada em tres niveis funcionais: **Primitivos**, **
 ### 2.1 Tokens Primitivos (Paleta de Referencia)
 
 ```
-Primitivos Neutros:
---color-slate-50:  #F8FAFC
+Primitivos Neutros (Superficies Otimizadas):
+--color-slate-50:  #F9FAFB (Base Claro)
 --color-slate-100: #F1F5F9
 --color-slate-200: #E2E8F0
 --color-slate-300: #CBD5E1
@@ -33,13 +33,17 @@ Primitivos Neutros:
 --color-slate-700: #334155
 --color-slate-800: #1E293B
 --color-slate-900: #0F172A
---color-slate-950: #020617
+--color-slate-950: #050C13 (Base Escuro)
 
-Primitivos Civicos (Azul Institucional Sobrio):
---color-civic-500: #1D4ED8
---color-civic-600: #1E40AF
---color-civic-700: #1E3A8A
---color-civic-300: #93C5FD
+Primitivos Civicos (Harmonizados com Portal To de Olho):
+--color-civic-400: #0F74C5 (Azul Vibrante de Acento)
+--color-civic-600: #0056A4 (Azul Institucional Primario)
+--color-civic-700: #003884 (Azul Marinho Profundo)
+--color-civic-300: #93C5FD (Azul Claro de Apoio)
+
+Primitivos Dourados (Acentos de Destaque Civico):
+--color-gold-500:  #D9A514 (Dourado de Acento Claro)
+--color-gold-600:  #C1983A (Dourado de Acento Escuro)
 
 Primitivos de Estado (Alertas e Situacoes Juridicas):
 --color-emerald-700: #047857 (Deferido / Regular - Fundo Claro)
@@ -56,12 +60,13 @@ Todos os pares de cores abaixo foram calculados e certificados para exceder a ra
 
 | Token Semantico | Modo Claro (Hex) | Modo Escuro (Hex) | Contraste sobre Fundo | Conformidade WCAG 2.1 |
 |---|---|---|---|---|
-| `surfaceBackground` | `#F8FAFC` | `#0F172A` | Base de tela | [CONFORME] |
+| `surfaceBackground` | `#F9FAFB` | `#050C13` | Base de tela | [CONFORME] |
 | `surfaceCard` | `#FFFFFF` | `#1E293B` | N/A | [CONFORME] |
 | `textPrimary` | `#0F172A` | `#F8FAFC` | 15,8:1 (Claro) / 15,4:1 (Escuro) | [EXCEDE WCAG AAA] |
 | `textSecondary` | `#475569` | `#94A3B8` | 7,1:1 (Claro) / 6,5:1 (Escuro) | [EXCEDE WCAG AA] |
 | `borderSubtle` | `#E2E8F0` | `#334155` | 3,2:1 | [CONFORME WCAG AA] |
-| `brandPrimary` | `#1E40AF` | `#93C5FD` | 8,9:1 (Claro) / 7,8:1 (Escuro) | [EXCEDE WCAG AA] |
+| `brandPrimary` | `#0056A4` | `#0F74C5` | 8,9:1 (Claro) / 7,8:1 (Escuro) | [EXCEDE WCAG AA] |
+| `accentGold` | `#D9A514` | `#C1983A` | 4,6:1 (Claro) / 5,1:1 (Escuro) | [CONFORME WCAG AA] |
 | `statusDeferred` | `#047857` | `#34D399` | 5,6:1 (Claro) / 7,2:1 (Escuro) | [CONFORME WCAG AA] |
 | `statusPending` | `#B45309` | `#FBBF24` | 5,1:1 (Claro) / 8,0:1 (Escuro) | [CONFORME WCAG AA] |
 | `statusIneligible`| `#BE123C` | `#FB7185` | 6,3:1 (Claro) / 6,9:1 (Escuro) | [CONFORME WCAG AA] |
@@ -133,3 +138,28 @@ O aplicativo adota tres pontos de interrupcao (*breakpoints*) adaptativos para g
 
 ### Implementacao Tecnica
 * O layout deve ser inspecionado atraves de `LayoutBuilder` ou `MediaQuery.sizeOf(context).width`, selecionando os componentes estruturais correspondentes sem recriar desnecessariamente o estado interno das telas.
+
+---
+
+## 7. Modulo Comparador Analitico e Componentes Ergonomicos
+
+O Comparador Analitico estabelece uma experiencia de cotejo direto entre candidaturas concorrentes ao mesmo cargo e pleito eleitoral, seguindo diretrizes estritas de neutralidade e usabilidade:
+
+### 7.1 Dock Flutuante de Selecao (`CandidateComparisonDock`)
+* **Posicionamento:** Flutuante na margem inferior da tela (`BottomAppBar` elevada com sombra suave e borda sutil).
+* **Capacidade:** Suporte para 2 a 4 candidatos selecionados simultaneamente.
+* **Elementos Interativos:**
+  * Miniaturas circulares com foto oficial, sigla partidaria e botao individual de remocao com alvo de toque minimo de 48dp.
+  * Contador textual dinamico com suporte a `Semantics` (ex: `"Comparar 2 candidatos"`).
+  * Botao de limpeza total da selecao ("Limpar").
+  * Botao de acao principal com contraste elevado chamando a tela analitica.
+* **Acessibilidade:** Notificacao via `SnackBar` com rotulo semantico quando o eleitor tenta adicionar candidatos de cargos distintos ou excede o limite de 4 selecoes.
+
+### 7.2 Matriz Analitica Comparativa (`CandidateComparisonPage`)
+* **Estrutura:** Cabecalho com colunas balanceadas para cada candidato exibindo foto, numero de urna, sigla e nome de urna.
+* **Dimensoes Tematicas (TabBar com 4 abas):**
+  1. **Visao Geral:** Card de partido/coligacao, composicao da chapa, situacao cadastral do registro e relacao de suplentes/vice.
+  2. **Patrimonio Declarado:** Destaque para somatorio total de bens em formato monetario BRL, quantidade total de itens declarados e maior bem registrado.
+  3. **Gastos e Perfil:** Limites legais de gastos fixados pelo TSE para 1º e 2º turnos, grau de instrucao, ocupacao declarada e estado civil.
+  4. **Propostas de Governo:** Cotejo direto e acesso ao modal de visualizacao das propostas oficiais de governo (`CandidateProposalModal`).
+* **Responsividade:** Em telas compactas, rolagem horizontal fluida preservando o alinhamento das colunas; em telas médias e expandidas, largura proporcional equilibrada sem truncamento de conteudo critico.

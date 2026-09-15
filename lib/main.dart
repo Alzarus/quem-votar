@@ -10,6 +10,7 @@ import 'package:quem_votar/data/repositories/election_repository_impl.dart';
 import 'package:quem_votar/domain/usecases/get_candidate_detail_use_case.dart';
 import 'package:quem_votar/domain/usecases/get_candidates_list_use_case.dart';
 import 'package:quem_votar/domain/usecases/get_elections_use_case.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_bloc.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_event.dart';
@@ -125,8 +126,15 @@ class QuemVotarApp extends StatelessWidget {
     final filterBloc = ElectionFilterBloc(getElectionsUseCase: getElectionsUseCase!)
       ..add(const ElectionFilterStarted());
     final listBloc = CandidateListBloc(getCandidatesListUseCase: getCandidatesListUseCase!);
+    final comparisonBloc = getCandidateDetailUseCase != null
+        ? CandidateComparisonBloc(getCandidateDetailUseCase: getCandidateDetailUseCase!)
+        : null;
 
-    Widget content = CandidateListPage(electionFilterBloc: filterBloc, candidateListBloc: listBloc);
+    Widget content = CandidateListPage(
+      electionFilterBloc: filterBloc,
+      candidateListBloc: listBloc,
+      candidateComparisonBloc: comparisonBloc,
+    );
 
     if (getCandidateDetailUseCase != null) {
       content = RepositoryProvider<GetCandidateDetailUseCase>.value(

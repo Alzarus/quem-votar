@@ -23,6 +23,8 @@ abstract final class AppTheme {
       colorScheme: ColorScheme.light(
         primary: semantic.brandPrimary,
         onPrimary: AppColors.white,
+        secondary: semantic.accentGold,
+        onSecondary: AppColors.slate900,
         surface: semantic.surfaceBackground,
         onSurface: semantic.textPrimary,
         outline: semantic.borderSubtle,
@@ -57,12 +59,14 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: semantic.surfaceBackground,
       colorScheme: ColorScheme.dark(
         primary: semantic.brandPrimary,
-        onPrimary: AppColors.slate950,
+        onPrimary: AppColors.white,
+        secondary: semantic.accentGold,
+        onSecondary: AppColors.slate950,
         surface: semantic.surfaceBackground,
         onSurface: semantic.textPrimary,
         outline: semantic.borderSubtle,
         error: semantic.statusIneligible,
-        onError: AppColors.slate950,
+        onError: AppColors.white,
       ),
       cardTheme: CardThemeData(
         color: semantic.surfaceCard,

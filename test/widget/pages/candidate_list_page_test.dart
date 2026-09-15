@@ -8,15 +8,20 @@ import 'package:quem_votar/domain/entities/election.dart';
 import 'package:quem_votar/domain/entities/election_role.dart';
 import 'package:quem_votar/domain/entities/federative_unit.dart';
 import 'package:quem_votar/domain/entities/registration_status.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_bloc.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_event.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_state.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_bloc.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_event.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_state.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_event.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_state.dart';
+import 'package:quem_votar/presentation/pages/candidate_comparison_page.dart';
 import 'package:quem_votar/presentation/pages/candidate_list_page.dart';
 import 'package:quem_votar/presentation/theme/app_theme.dart';
 import 'package:quem_votar/presentation/widgets/candidate_card.dart';
+import 'package:quem_votar/presentation/widgets/candidate_comparison_dock.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_feedback_views.dart';
 
 class MockElectionFilterBloc extends MockBloc<ElectionFilterEvent, ElectionFilterState>
@@ -24,6 +29,10 @@ class MockElectionFilterBloc extends MockBloc<ElectionFilterEvent, ElectionFilte
 
 class MockCandidateListBloc extends MockBloc<CandidateListEvent, CandidateListState>
     implements CandidateListBloc {}
+
+class MockCandidateComparisonBloc
+    extends MockBloc<CandidateComparisonEvent, CandidateComparisonState>
+    implements CandidateComparisonBloc {}
 
 void main() {
   late MockElectionFilterBloc mockFilterBloc;
@@ -367,6 +376,50 @@ void main() {
 
       expect(size.width, greaterThanOrEqualTo(48.0));
       expect(size.height, greaterThanOrEqualTo(48.0));
+    });
+  });
+
+  group('CandidateListPage - Modulo Comparador Integrado', () {
+    testWidgets('deve renderizar dock e acionar navegacao para comparador', (tester) async {
+      final mockCompBloc = MockCandidateComparisonBloc();
+      when(() => mockCompBloc.state).thenReturn(
+        CandidateComparisonState(
+          selectedCandidates: [mockCandidates[0], mockCandidates[1]],
+          status: CandidateComparisonStatus.initial,
+        ),
+      );
+      when(() => mockCompBloc.stream).thenAnswer((_) => const Stream.empty());
+
+      when(() => mockListBloc.state).thenReturn(
+        const CandidateListState(
+          status: CandidateListStatus.success,
+          allCandidates: mockCandidates,
+          filteredCandidates: mockCandidates,
+          searchQuery: '',
+          sortOption: CandidateSortOption.alphabetical,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: CandidateListPage(
+            electionFilterBloc: mockFilterBloc,
+            candidateListBloc: mockListBloc,
+            candidateComparisonBloc: mockCompBloc,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CandidateComparisonDock), findsOneWidget);
+      expect(find.text('2 selecionado(s)'), findsOneWidget);
+      expect(find.text('Comparar (2)'), findsOneWidget);
+
+      await tester.tap(find.text('Comparar (2)'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CandidateComparisonPage), findsOneWidget);
     });
   });
 }

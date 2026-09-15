@@ -13,10 +13,18 @@ import 'package:quem_votar/presentation/widgets/candidate_status_badge.dart';
 /// Implementa conformidade estrita com WCAG 2.1 AA, alvo de toque minimo de 48dp,
 /// rotulacao semantica para tecnologias assistivas e expansao fluida sob textScaler.
 class CandidateCard extends StatelessWidget {
-  const CandidateCard({super.key, required this.candidate, this.onTap});
+  const CandidateCard({
+    super.key,
+    required this.candidate,
+    this.onTap,
+    this.isComparing = false,
+    this.onCompareToggle,
+  });
 
   final CandidateSummary candidate;
   final VoidCallback? onTap;
+  final bool isComparing;
+  final VoidCallback? onCompareToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +40,16 @@ class CandidateCard extends StatelessWidget {
         elevation: 0.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: semantic.borderSubtle),
+          side: BorderSide(
+            color: isComparing ? semantic.accentGold : semantic.borderSubtle,
+            width: isComparing ? 1.8 : 1.0,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12.0),
-          child: Padding(
-            padding: AppSpacing.edgeInsetsMd,
-            child: ExcludeSemantics(child: _buildCardContent(semantic)),
-          ),
+          child: Padding(padding: AppSpacing.edgeInsetsMd, child: _buildCardContent(semantic)),
         ),
       ),
     );
@@ -62,7 +70,7 @@ class CandidateCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBadgesRow(),
+              _buildBadgesRow(semantic),
               const SizedBox(height: AppSpacing.space2xs),
               _buildCandidateName(semantic),
               _buildFullName(semantic),
@@ -75,19 +83,66 @@ class CandidateCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgesRow() {
-    return Wrap(
-      spacing: AppSpacing.spaceXs,
-      runSpacing: AppSpacing.space2xs,
-      crossAxisAlignment: WrapCrossAlignment.center,
+  Widget _buildBadgesRow(AppSemanticColors semantic) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CandidatePartyChip(
-          partyAcronym: candidate.partyAcronym,
-          candidateNumber: candidate.ballotNumber,
-          coalition: candidate.coalitionName,
+        Expanded(
+          child: Wrap(
+            spacing: AppSpacing.spaceXs,
+            runSpacing: AppSpacing.space2xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              CandidatePartyChip(
+                partyAcronym: candidate.partyAcronym,
+                candidateNumber: candidate.ballotNumber,
+                coalition: candidate.coalitionName,
+              ),
+              CandidateStatusBadge(status: candidate.registrationStatus),
+            ],
+          ),
         ),
-        CandidateStatusBadge(status: candidate.registrationStatus),
+        if (onCompareToggle != null) _buildCompareButton(semantic),
       ],
+    );
+  }
+
+  Widget _buildCompareButton(AppSemanticColors semantic) {
+    final label = isComparing
+        ? 'Remover ${candidate.ballotName} do comparador'
+        : 'Adicionar ${candidate.ballotName} ao comparador';
+    final tooltip = isComparing ? 'Remover da comparação' : 'Comparar candidatura';
+    final bgColor = isComparing
+        ? semantic.accentGold.withValues(alpha: 0.15)
+        : semantic.surfaceCard;
+    final borderColor = isComparing ? semantic.accentGold : semantic.borderSubtle;
+    final iconColor = isComparing ? semantic.accentGold : semantic.textSecondary;
+
+    return Semantics(
+      button: true,
+      label: label,
+      child: Tooltip(
+        message: tooltip,
+        child: SizedBox(
+          width: 48.0,
+          height: 48.0,
+          child: IconButton.outlined(
+            style: IconButton.styleFrom(
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+              backgroundColor: bgColor,
+              side: BorderSide(color: borderColor, width: isComparing ? 1.5 : 1.0),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+            ),
+            onPressed: onCompareToggle,
+            icon: Icon(
+              isComparing ? Icons.check_circle : Icons.swap_horiz,
+              color: iconColor,
+              size: 20.0,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

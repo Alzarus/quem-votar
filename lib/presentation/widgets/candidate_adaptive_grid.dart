@@ -14,12 +14,16 @@ class CandidateAdaptiveGrid extends StatelessWidget {
   final List<CandidateSummary> candidates;
   final ValueChanged<CandidateSummary>? onCandidateSelected;
   final RefreshCallback? onRefresh;
+  final bool Function(int candidateId)? isCandidateComparing;
+  final ValueChanged<CandidateSummary>? onCompareToggled;
 
   const CandidateAdaptiveGrid({
     super.key,
     required this.candidates,
     this.onCandidateSelected,
     this.onRefresh,
+    this.isCandidateComparing,
+    this.onCompareToggled,
   });
 
   @override
@@ -63,6 +67,8 @@ class CandidateAdaptiveGrid extends StatelessWidget {
         return CandidateCard(
           candidate: candidate,
           onTap: () => onCandidateSelected?.call(candidate),
+          isComparing: isCandidateComparing?.call(candidate.id) ?? false,
+          onCompareToggle: onCompareToggled != null ? () => onCompareToggled!(candidate) : null,
         );
       },
     );
@@ -103,7 +109,12 @@ class CandidateAdaptiveGrid extends StatelessWidget {
     }
     final candidate = candidates[itemIndex];
     return Expanded(
-      child: CandidateCard(candidate: candidate, onTap: () => onCandidateSelected?.call(candidate)),
+      child: CandidateCard(
+        candidate: candidate,
+        onTap: () => onCandidateSelected?.call(candidate),
+        isComparing: isCandidateComparing?.call(candidate.id) ?? false,
+        onCompareToggle: onCompareToggled != null ? () => onCompareToggled!(candidate) : null,
+      ),
     );
   }
 }

@@ -13,6 +13,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     required this.textSecondary,
     required this.borderSubtle,
     required this.brandPrimary,
+    required this.accentGold,
     required this.statusDeferred,
     required this.statusPending,
     required this.statusIneligible,
@@ -24,6 +25,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color textSecondary;
   final Color borderSubtle;
   final Color brandPrimary;
+  final Color accentGold;
   final Color statusDeferred;
   final Color statusPending;
   final Color statusIneligible;
@@ -36,6 +38,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     textSecondary: AppColors.slate600,
     borderSubtle: AppColors.slate200,
     brandPrimary: AppColors.civic600,
+    accentGold: AppColors.gold500,
     statusDeferred: AppColors.emerald700,
     statusPending: AppColors.amber700,
     statusIneligible: AppColors.rose700,
@@ -43,12 +46,13 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 
   /// Conjunto semantico para modo escuro (Dark Mode).
   static const AppSemanticColors dark = AppSemanticColors(
-    surfaceBackground: AppColors.slate900,
-    surfaceCard: AppColors.slate800,
+    surfaceBackground: AppColors.slate950,
+    surfaceCard: AppColors.slate900,
     textPrimary: AppColors.slate50,
     textSecondary: AppColors.slate400,
     borderSubtle: AppColors.slate700,
-    brandPrimary: AppColors.civic300,
+    brandPrimary: AppColors.civic400,
+    accentGold: AppColors.gold600,
     statusDeferred: AppColors.emerald400,
     statusPending: AppColors.amber400,
     statusIneligible: AppColors.rose400,
@@ -62,6 +66,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     Color? textSecondary,
     Color? borderSubtle,
     Color? brandPrimary,
+    Color? accentGold,
     Color? statusDeferred,
     Color? statusPending,
     Color? statusIneligible,
@@ -73,6 +78,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       textSecondary: textSecondary ?? this.textSecondary,
       borderSubtle: borderSubtle ?? this.borderSubtle,
       brandPrimary: brandPrimary ?? this.brandPrimary,
+      accentGold: accentGold ?? this.accentGold,
       statusDeferred: statusDeferred ?? this.statusDeferred,
       statusPending: statusPending ?? this.statusPending,
       statusIneligible: statusIneligible ?? this.statusIneligible,
@@ -91,6 +97,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       borderSubtle: Color.lerp(borderSubtle, other.borderSubtle, t)!,
       brandPrimary: Color.lerp(brandPrimary, other.brandPrimary, t)!,
+      accentGold: Color.lerp(accentGold, other.accentGold, t)!,
       statusDeferred: Color.lerp(statusDeferred, other.statusDeferred, t)!,
       statusPending: Color.lerp(statusPending, other.statusPending, t)!,
       statusIneligible: Color.lerp(statusIneligible, other.statusIneligible, t)!,
@@ -107,6 +114,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
         other.textSecondary == textSecondary &&
         other.borderSubtle == borderSubtle &&
         other.brandPrimary == brandPrimary &&
+        other.accentGold == accentGold &&
         other.statusDeferred == statusDeferred &&
         other.statusPending == statusPending &&
         other.statusIneligible == statusIneligible;
@@ -120,6 +128,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     textSecondary,
     borderSubtle,
     brandPrimary,
+    accentGold,
     statusDeferred,
     statusPending,
     statusIneligible,

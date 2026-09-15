@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quem_votar/core/errors/failures.dart';
+import 'package:quem_votar/core/utils/result.dart';
+import 'package:quem_votar/domain/entities/candidate_detail.dart';
 import 'package:quem_votar/domain/entities/candidate_summary.dart';
+import 'package:quem_votar/domain/repositories/candidate_repository.dart';
 import 'package:quem_votar/domain/usecases/get_candidate_detail_use_case.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_bloc.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_event.dart';
+import 'package:quem_votar/presentation/blocs/candidate_comparison/candidate_comparison_state.dart';
 import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_bloc.dart';
 import 'package:quem_votar/presentation/blocs/candidate_detail/candidate_detail_event.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_bloc.dart';
@@ -10,12 +17,14 @@ import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_stat
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_bloc.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_event.dart';
 import 'package:quem_votar/presentation/blocs/election_filter/election_filter_state.dart';
+import 'package:quem_votar/presentation/pages/candidate_comparison_page.dart';
 import 'package:quem_votar/presentation/pages/candidate_detail_page.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 import 'package:quem_votar/presentation/theme/app_spacing.dart';
 import 'package:quem_votar/presentation/theme/app_typography.dart';
 import 'package:quem_votar/presentation/widgets/candidate_active_filter_bar.dart';
 import 'package:quem_votar/presentation/widgets/candidate_adaptive_grid.dart';
+import 'package:quem_votar/presentation/widgets/candidate_comparison_dock.dart';
 import 'package:quem_votar/presentation/widgets/candidate_filter_bottom_sheet.dart';
 import 'package:quem_votar/presentation/widgets/candidate_filter_toolbar.dart';
 import 'package:quem_votar/presentation/widgets/candidate_list_feedback_views.dart';
@@ -30,28 +39,81 @@ import 'package:quem_votar/presentation/widgets/theme_mode_button.dart';
 class CandidateListPage extends StatelessWidget {
   final ElectionFilterBloc? electionFilterBloc;
   final CandidateListBloc? candidateListBloc;
+  final CandidateComparisonBloc? candidateComparisonBloc;
   final ValueChanged<CandidateSummary>? onCandidateSelected;
 
   const CandidateListPage({
     super.key,
     this.electionFilterBloc,
     this.candidateListBloc,
+    this.candidateComparisonBloc,
     this.onCandidateSelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (electionFilterBloc != null && candidateListBloc != null) {
-      return MultiBlocProvider(
-        providers: [
-          BlocProvider<ElectionFilterBloc>.value(value: electionFilterBloc!),
-          BlocProvider<CandidateListBloc>.value(value: candidateListBloc!),
-        ],
-        child: _CandidateListView(onCandidateSelected: onCandidateSelected),
+    final providers = <BlocProvider>[];
+    if (electionFilterBloc != null) {
+      providers.add(BlocProvider<ElectionFilterBloc>.value(value: electionFilterBloc!));
+    }
+    if (candidateListBloc != null) {
+      providers.add(BlocProvider<CandidateListBloc>.value(value: candidateListBloc!));
+    }
+    if (candidateComparisonBloc != null) {
+      providers.add(BlocProvider<CandidateComparisonBloc>.value(value: candidateComparisonBloc!));
+    } else {
+      providers.add(
+        BlocProvider<CandidateComparisonBloc>(create: (ctx) => _createDefaultComparisonBloc(ctx)),
       );
     }
-    return _CandidateListView(onCandidateSelected: onCandidateSelected);
+
+    return MultiBlocProvider(
+      providers: providers,
+      child: _CandidateListView(onCandidateSelected: onCandidateSelected),
+    );
   }
+
+  CandidateComparisonBloc _createDefaultComparisonBloc(BuildContext context) {
+    final useCase = _resolveDetailUseCase(context);
+    if (useCase != null) {
+      return CandidateComparisonBloc(getCandidateDetailUseCase: useCase);
+    }
+    return CandidateComparisonBloc(
+      getCandidateDetailUseCase: const GetCandidateDetailUseCase(_NoOpCandidateRepository()),
+    );
+  }
+
+  GetCandidateDetailUseCase? _resolveDetailUseCase(BuildContext context) {
+    try {
+      return context.read<GetCandidateDetailUseCase>();
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+final class _NoOpCandidateRepository implements CandidateRepository {
+  const _NoOpCandidateRepository();
+
+  @override
+  Future<Result<List<CandidateSummary>, Failure>> getCandidates({
+    required int year,
+    required String ufOrMun,
+    required int electionId,
+    required int roleCode,
+    bool forceRefresh = false,
+  }) async => const Result.success(<CandidateSummary>[]);
+
+  @override
+  Future<Result<CandidateDetail, Failure>> getCandidateDetail({
+    required int year,
+    required String ufOrMun,
+    required int electionId,
+    required int candidateId,
+    bool forceRefresh = false,
+  }) async => const Result.failure(
+    ServerFailure(message: 'NoOp repository', operationalContext: 'NoOpCandidateRepository'),
+  );
 }
 
 class _CandidateListView extends StatelessWidget {
@@ -71,32 +133,48 @@ class _CandidateListView extends StatelessWidget {
         }
         _handlePopOnList(context);
       },
-      child: Scaffold(
-        backgroundColor: semantic.surfaceBackground,
-        appBar: _buildAppBar(context, semantic),
-        body: BlocListener<ElectionFilterBloc, ElectionFilterState>(
-          listenWhen: _shouldReloadCandidates,
-          listener: _handleFilterSelectionChanged,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200.0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spaceMd),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: AppSpacing.spaceSm),
-                    _buildFilterSection(context),
-                    const SizedBox(height: AppSpacing.spaceXs),
-                    _buildRolePillsSection(context),
-                    const SizedBox(height: AppSpacing.spaceSm),
-                    _buildSearchSection(context),
-                    _buildActiveFiltersSection(context),
-                    const SizedBox(height: AppSpacing.spaceXs),
-                    _buildStatusHeader(context, semantic),
-                    const SizedBox(height: AppSpacing.space2xs),
-                    Expanded(child: _buildCandidatesContent(context)),
-                  ],
+      child: BlocListener<CandidateComparisonBloc, CandidateComparisonState>(
+        listenWhen: (prev, curr) =>
+            curr.notificationMessage != null &&
+            prev.notificationMessage != curr.notificationMessage,
+        listener: (context, compState) {
+          if (compState.notificationMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(compState.notificationMessage!),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: semantic.surfaceBackground,
+          appBar: _buildAppBar(context, semantic),
+          bottomNavigationBar: _buildComparisonDock(context),
+          body: BlocListener<ElectionFilterBloc, ElectionFilterState>(
+            listenWhen: _shouldReloadCandidates,
+            listener: _handleFilterSelectionChanged,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200.0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spaceMd),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: AppSpacing.spaceSm),
+                      _buildFilterSection(context),
+                      const SizedBox(height: AppSpacing.spaceXs),
+                      _buildRolePillsSection(context),
+                      const SizedBox(height: AppSpacing.spaceSm),
+                      _buildSearchSection(context),
+                      _buildActiveFiltersSection(context),
+                      const SizedBox(height: AppSpacing.spaceXs),
+                      _buildStatusHeader(context, semantic),
+                      const SizedBox(height: AppSpacing.space2xs),
+                      Expanded(child: _buildCandidatesContent(context)),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -348,11 +426,21 @@ class _CandidateListView extends StatelessWidget {
               );
             }
             if (state.status == CandidateListStatus.success) {
-              return CandidateAdaptiveGrid(
-                key: const PageStorageKey('candidate_adaptive_grid_key'),
-                candidates: state.filteredCandidates,
-                onCandidateSelected: (candidate) => _handleCandidateSelected(context, candidate),
-                onRefresh: () async => _triggerRefresh(context),
+              return BlocBuilder<CandidateComparisonBloc, CandidateComparisonState>(
+                buildWhen: (prev, curr) => prev.selectedCandidates != curr.selectedCandidates,
+                builder: (context, compState) {
+                  return CandidateAdaptiveGrid(
+                    key: const PageStorageKey('candidate_adaptive_grid_key'),
+                    candidates: state.filteredCandidates,
+                    onCandidateSelected: (candidate) =>
+                        _handleCandidateSelected(context, candidate),
+                    onRefresh: () async => _triggerRefresh(context),
+                    isCandidateComparing: (id) => compState.isSelected(id),
+                    onCompareToggled: (candidate) => context.read<CandidateComparisonBloc>().add(
+                      CandidateComparisonCandidateToggled(candidate),
+                    ),
+                  );
+                },
               );
             }
             return const SizedBox.shrink();
@@ -457,6 +545,47 @@ class _CandidateListView extends StatelessWidget {
     } catch (_) {
       return null;
     }
+  }
+
+  Widget _buildComparisonDock(BuildContext context) {
+    return BlocBuilder<CandidateComparisonBloc, CandidateComparisonState>(
+      buildWhen: (prev, curr) => prev.selectedCandidates != curr.selectedCandidates,
+      builder: (context, state) {
+        if (state.selectedCandidates.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return CandidateComparisonDock(
+          selectedCandidates: state.selectedCandidates,
+          onRemoveCandidate: (id) =>
+              context.read<CandidateComparisonBloc>().add(CandidateComparisonCandidateRemoved(id)),
+          onClearSelection: () => context.read<CandidateComparisonBloc>().add(
+            const CandidateComparisonSelectionCleared(),
+          ),
+          onCompare: () => _navigateToComparison(context),
+        );
+      },
+    );
+  }
+
+  void _navigateToComparison(BuildContext context) {
+    final filterState = context.read<ElectionFilterBloc>().state;
+    final year = filterState.selectedElection?.year ?? 2026;
+    final uf = filterState.selectedUf?.acronym ?? 'BR';
+    final electionId = filterState.selectedElection?.id ?? 20322002026;
+
+    final comparisonBloc = context.read<CandidateComparisonBloc>();
+    comparisonBloc.add(
+      CandidateComparisonDetailsLoadStarted(year: year, ufOrMun: uf, electionId: electionId),
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider<CandidateComparisonBloc>.value(
+          value: comparisonBloc,
+          child: const CandidateComparisonPage(),
+        ),
+      ),
+    );
   }
 
   void _handlePopOnList(BuildContext context) {
