@@ -317,6 +317,31 @@ void main() {
         expect(find.text('Filtros de Candidaturas'), findsOneWidget);
       },
     );
+
+    testWidgets('PopScope deve limpar busca ao acionar retorno quando searchQuery nao for vazia', (
+      tester,
+    ) async {
+      when(() => mockListBloc.state).thenReturn(
+        const CandidateListState(
+          status: CandidateListStatus.success,
+          allCandidates: mockCandidates,
+          filteredCandidates: mockCandidates,
+          searchQuery: 'Lula',
+          sortOption: CandidateSortOption.alphabetical,
+        ),
+      );
+
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      final popScopeFinder = find.byWidgetPredicate((w) => w is PopScope);
+      expect(popScopeFinder, findsOneWidget);
+
+      final popScope = tester.widget<PopScope<Object?>>(popScopeFinder);
+      popScope.onPopInvokedWithResult?.call(false, null);
+
+      verify(() => mockListBloc.add(const CandidateListSearchQueryChanged(''))).called(1);
+    });
   });
 
   group('CandidateListPage - Acessibilidade WCAG 2.1 AA', () {

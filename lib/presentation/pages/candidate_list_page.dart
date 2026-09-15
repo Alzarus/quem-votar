@@ -63,32 +63,41 @@ class _CandidateListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = context.semanticColors;
 
-    return Scaffold(
-      backgroundColor: semantic.surfaceBackground,
-      appBar: _buildAppBar(context, semantic),
-      body: BlocListener<ElectionFilterBloc, ElectionFilterState>(
-        listenWhen: _shouldReloadCandidates,
-        listener: _handleFilterSelectionChanged,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200.0),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spaceMd),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppSpacing.spaceSm),
-                  _buildFilterSection(context),
-                  const SizedBox(height: AppSpacing.spaceXs),
-                  _buildRolePillsSection(context),
-                  const SizedBox(height: AppSpacing.spaceSm),
-                  _buildSearchSection(context),
-                  _buildActiveFiltersSection(context),
-                  const SizedBox(height: AppSpacing.spaceXs),
-                  _buildStatusHeader(context, semantic),
-                  const SizedBox(height: AppSpacing.space2xs),
-                  Expanded(child: _buildCandidatesContent(context)),
-                ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        }
+        _handlePopOnList(context);
+      },
+      child: Scaffold(
+        backgroundColor: semantic.surfaceBackground,
+        appBar: _buildAppBar(context, semantic),
+        body: BlocListener<ElectionFilterBloc, ElectionFilterState>(
+          listenWhen: _shouldReloadCandidates,
+          listener: _handleFilterSelectionChanged,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spaceMd),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSpacing.spaceSm),
+                    _buildFilterSection(context),
+                    const SizedBox(height: AppSpacing.spaceXs),
+                    _buildRolePillsSection(context),
+                    const SizedBox(height: AppSpacing.spaceSm),
+                    _buildSearchSection(context),
+                    _buildActiveFiltersSection(context),
+                    const SizedBox(height: AppSpacing.spaceXs),
+                    _buildStatusHeader(context, semantic),
+                    const SizedBox(height: AppSpacing.space2xs),
+                    Expanded(child: _buildCandidatesContent(context)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -443,6 +452,21 @@ class _CandidateListView extends StatelessWidget {
       return context.read<GetCandidateDetailUseCase>();
     } catch (_) {
       return null;
+    }
+  }
+
+  void _handlePopOnList(BuildContext context) {
+    final listBloc = context.read<CandidateListBloc>();
+    if (listBloc.state.searchQuery.isNotEmpty) {
+      listBloc.add(const CandidateListSearchQueryChanged(''));
+      return;
+    }
+    if (listBloc.state.hasActiveFilters) {
+      listBloc.add(const CandidateListFiltersCleared());
+      return;
+    }
+    if (Navigator.canPop(context)) {
+      Navigator.of(context).pop();
     }
   }
 }

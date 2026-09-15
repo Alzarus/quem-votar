@@ -330,9 +330,35 @@ void main() {
       await tester.ensureVisible(proposalBtn);
       await tester.pumpAndSettle();
       await tester.tap(proposalBtn);
+      await tester.pumpAndSettle();
+
+      final openPdfBtn = find.text('Abrir Documento PDF (Nova Janela)');
+      expect(openPdfBtn, findsOneWidget);
+      await tester.tap(openPdfBtn);
       await tester.pump();
 
       expect(fakeLauncher.openedUrl, equals(mockDetail.proposalDocumentUrl));
+    });
+
+    testWidgets('PopScope deve interceptar retorno e acionar onBack', (tester) async {
+      var backCalled = false;
+      when(() => mockDetailBloc.state).thenReturn(
+        CandidateDetailState.initial().copyWith(
+          status: CandidateDetailStatus.success,
+          candidateDetail: () => mockDetail,
+        ),
+      );
+
+      await tester.pumpWidget(buildTestApp(onBack: () => backCalled = true));
+      await tester.pumpAndSettle();
+
+      final popScopeFinder = find.byWidgetPredicate((w) => w is PopScope);
+      expect(popScopeFinder, findsOneWidget);
+
+      final popScopeWidget = tester.widget<PopScope<Object?>>(popScopeFinder);
+      popScopeWidget.onPopInvokedWithResult?.call(false, null);
+
+      expect(backCalled, isTrue);
     });
   });
 

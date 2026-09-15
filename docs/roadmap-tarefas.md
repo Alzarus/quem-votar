@@ -292,7 +292,7 @@ Toda tarefa deve:
 | **B.4** | Substituicao de icones PWA, splash e eliminacao do logotipo Flutter | Substituir `web/favicon.png`, icones em `web/icons/` e splash do PWA pelo isotipo do projeto, removendo assets do Flutter no boot e visualizador | [CONCLUIDO] |
 | **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [PENDENTE] |
 | **B.6** | Indicador visual assertivo de filtros ativos (badge e destaque) | Adicionar indicador numerico (badge) no botao de filtros e destacar escolhas ativas no modal e na barra superior | [CONCLUIDO] |
-| **B.7** | Navegacao resiliente no PWA e botao explicito de fechar propostas | Prevenir fechamento indevido do PWA ao voltar da proposta de governo, incorporando botao de encerramento e controle de historico com PopScope | [PENDENTE] |
+| **B.7** | Navegacao resiliente no PWA e botao explicito de fechar propostas | Prevenir fechamento indevido do PWA ao voltar da proposta de governo, incorporando botao de encerramento e controle de historico com PopScope | [CONCLUIDO] |
 | **B.8** | Reavaliacao ergonomica do botao de atualizacao (Pull-to-Refresh) | Auditar a redundancia do botao fixo de atualizacao na AppBar, substituindo-o por Pull-to-Refresh na listagem | [CONCLUIDO] |
 | **B.9** | Alternancia explicita de temas (Claro/Escuro) e persistencia | Implementar seletor acessivel de tema na interface com persistencia local da preferencia (Claro, Escuro, Sistema) | [CONCLUIDO] |
 | **B.10** | Filtragem multipartidaria simultanea (multi-select de partidos) | Expandir o BLoC e o modal para permitir a selecao concomitante de multiplas legendas partidarias | [CONCLUIDO] |
