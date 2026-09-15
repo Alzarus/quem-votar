@@ -11,8 +11,8 @@ Write-Host "[DEPLOY] Iniciando processo de deploy para $ServerHost..."
 
 # 1. Compilacao Flutter Web com base-href configurado para subcaminho /quemvotar/
 if (-not $SkipBuild) {
-    Write-Host "[DEPLOY] Compilando artefatos Flutter Web em modo release (--base-href /quemvotar/)..."
-    flutter build web --release --base-href "/quemvotar/"
+    Write-Host "[DEPLOY] Compilando artefatos Flutter Web em modo release (--base-href /quemvotar/ --no-tree-shake-icons)..."
+    flutter build web --release --base-href "/quemvotar/" --no-tree-shake-icons
     if ($LASTEXITCODE -ne 0) {
         Write-Error "[DEPLOY] Falha na compilacao do Flutter Web."
         exit $LASTEXITCODE

@@ -206,11 +206,12 @@ class _CandidateListView extends StatelessWidget {
     final semantic = context.semanticColors;
     final hasFilters = state.hasActiveFilters;
     final count = state.activeFiltersCount;
+    final semanticLabel =
+        'Abrir painel de filtros multicritério. ${hasFilters ? '$count filtros ativos.' : 'Nenhum filtro ativo.'}';
 
     return Semantics(
       button: true,
-      label:
-          'Abrir painel de filtros multicritério. ${hasFilters ? '$count filtros ativos.' : 'Nenhum filtro ativo.'}',
+      label: semanticLabel,
       child: Tooltip(
         message: 'Filtrar candidaturas',
         child: Badge(
@@ -218,30 +219,32 @@ class _CandidateListView extends StatelessWidget {
           label: Text('$count'),
           backgroundColor: semantic.brandPrimary,
           textColor: semantic.surfaceCard,
-          child: SizedBox(
-            width: 48.0,
-            height: 48.0,
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                backgroundColor: hasFilters
-                    ? semantic.brandPrimary.withValues(alpha: 0.12)
-                    : semantic.surfaceCard,
-                side: BorderSide(
-                  color: hasFilters ? semantic.brandPrimary : semantic.borderSubtle,
-                  width: hasFilters ? 1.8 : 1.0,
-                ),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-              ),
-              onPressed: () => _openFilterBottomSheet(context),
-              child: Icon(
-                Icons.filter_alt_outlined,
-                color: hasFilters ? semantic.brandPrimary : semantic.textPrimary,
-                size: 24.0,
-              ),
-            ),
-          ),
+          child: _buildFilterIconButton(context, semantic, hasFilters),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterIconButton(BuildContext context, AppSemanticColors semantic, bool hasFilters) {
+    final bgColor = hasFilters
+        ? semantic.brandPrimary.withValues(alpha: 0.12)
+        : semantic.surfaceCard;
+    final borderColor = hasFilters ? semantic.brandPrimary : semantic.borderSubtle;
+    final iconColor = hasFilters ? semantic.brandPrimary : semantic.textPrimary;
+
+    return SizedBox(
+      width: 48.0,
+      height: 48.0,
+      child: IconButton.outlined(
+        style: IconButton.styleFrom(
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
+          backgroundColor: bgColor,
+          side: BorderSide(color: borderColor, width: hasFilters ? 1.8 : 1.0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        ),
+        onPressed: () => _openFilterBottomSheet(context),
+        icon: Icon(Icons.filter_alt_outlined, color: iconColor, size: 24.0),
       ),
     );
   }
