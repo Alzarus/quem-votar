@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:quem_votar/domain/entities/election.dart';
 import 'package:quem_votar/domain/entities/federative_unit.dart';
 import 'package:quem_votar/presentation/blocs/candidate_list/candidate_list_state.dart';
 import 'package:quem_votar/presentation/theme/app_semantic_colors.dart';
 import 'package:quem_votar/presentation/theme/app_spacing.dart';
 import 'package:quem_votar/presentation/theme/app_typography.dart';
 
-/// Barra de selecao de parametros territoriais e ordenacao neutra.
+/// Barra de selecao de parametros eleitorais, territoriais e ordenacao neutra.
 ///
 /// Atende integralmente a WCAG 2.1 AA com alvos minimos de 48dp,
 /// rotulacao semantica compulsoria e adaptabilidade por largura.
 class CandidateFilterToolbar extends StatelessWidget {
+  final List<Election> availableElections;
+  final Election? selectedElection;
+  final ValueChanged<Election>? onElectionChanged;
+
   final List<FederativeUnit> availableUfs;
   final FederativeUnit? selectedUf;
   final ValueChanged<FederativeUnit> onUfChanged;
@@ -19,6 +24,9 @@ class CandidateFilterToolbar extends StatelessWidget {
 
   const CandidateFilterToolbar({
     super.key,
+    this.availableElections = const [],
+    this.selectedElection,
+    this.onElectionChanged,
     required this.availableUfs,
     required this.selectedUf,
     required this.onUfChanged,
@@ -42,11 +50,27 @@ class CandidateFilterToolbar extends StatelessWidget {
   }
 
   Widget _buildCompactLayout(AppSemanticColors semantic) {
-    return Row(
+    if (availableElections.isEmpty) {
+      return Row(
+        children: [
+          Expanded(flex: 4, child: _buildUfDropdown(semantic)),
+          const SizedBox(width: AppSpacing.spaceXs),
+          Expanded(flex: 5, child: _buildSortDropdown(semantic)),
+        ],
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(flex: 4, child: _buildUfDropdown(semantic)),
-        const SizedBox(width: AppSpacing.spaceXs),
-        Expanded(flex: 5, child: _buildSortDropdown(semantic)),
+        Row(
+          children: [
+            Expanded(child: _buildElectionDropdown(semantic)),
+            const SizedBox(width: AppSpacing.spaceXs),
+            Expanded(child: _buildUfDropdown(semantic)),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.spaceXs),
+        _buildSortDropdown(semantic),
       ],
     );
   }
@@ -54,11 +78,53 @@ class CandidateFilterToolbar extends StatelessWidget {
   Widget _buildWideLayout(AppSemanticColors semantic) {
     return Row(
       children: [
-        Expanded(flex: 1, child: _buildUfDropdown(semantic)),
+        if (availableElections.isNotEmpty) ...[
+          Expanded(flex: 3, child: _buildElectionDropdown(semantic)),
+          const SizedBox(width: AppSpacing.spaceSm),
+        ],
+        Expanded(flex: 3, child: _buildUfDropdown(semantic)),
         const SizedBox(width: AppSpacing.spaceSm),
-        Expanded(flex: 1, child: _buildSortDropdown(semantic)),
+        Expanded(flex: 4, child: _buildSortDropdown(semantic)),
       ],
     );
+  }
+
+  Widget _buildElectionDropdown(AppSemanticColors semantic) {
+    return Semantics(
+      label: 'Selecionar ano e pleito eleitoral oficial do TSE',
+      child: InputDecorator(
+        decoration: _buildDropdownDecoration(semantic, label: 'Pleito'),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<Election>(
+            value: selectedElection,
+            isDense: true,
+            isExpanded: true,
+            items: availableElections
+                .map((election) => _buildElectionMenuItem(election, semantic))
+                .toList(),
+            onChanged: (newElection) => _onElectionSelected(newElection),
+          ),
+        ),
+      ),
+    );
+  }
+
+  DropdownMenuItem<Election> _buildElectionMenuItem(Election election, AppSemanticColors semantic) {
+    return DropdownMenuItem<Election>(
+      value: election,
+      child: Text(
+        _formatElectionLabel(election),
+        style: AppTypography.bodyMedium.copyWith(color: semantic.textPrimary),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  String _formatElectionLabel(Election election) {
+    if (election.name.isNotEmpty) {
+      return election.name;
+    }
+    return '${election.year} - Eleição Oficial';
   }
 
   Widget _buildUfDropdown(AppSemanticColors semantic) {
@@ -145,6 +211,12 @@ class CandidateFilterToolbar extends StatelessWidget {
       borderRadius: BorderRadius.circular(10.0),
       borderSide: BorderSide(color: color, width: width),
     );
+  }
+
+  void _onElectionSelected(Election? election) {
+    if (election != null && onElectionChanged != null) {
+      onElectionChanged!(election);
+    }
   }
 
   void _onUfSelected(FederativeUnit? uf) {

@@ -143,6 +143,10 @@ class _CandidateListView extends StatelessWidget {
         return BlocBuilder<CandidateListBloc, CandidateListState>(
           builder: (context, listState) {
             return CandidateFilterToolbar(
+              availableElections: filterState.elections,
+              selectedElection: filterState.selectedElection,
+              onElectionChanged: (election) =>
+                  context.read<ElectionFilterBloc>().add(ElectionFilterElectionChanged(election)),
               availableUfs: filterState.availableUfs,
               selectedUf: filterState.selectedUf,
               onUfChanged: (uf) =>

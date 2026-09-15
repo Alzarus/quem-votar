@@ -287,10 +287,10 @@ Toda tarefa deve:
 | Codigo | Item de Refinamento / Demanda Registrada | Escopo Tecnico e Solucao Planejada | Status |
 |---|---|---|---|
 | **B.1** | Correcao definitiva da exibicao do icone do botao de filtros no Web | Investigar o tree-shaking de fontes de icones no Flutter Web (`--no-tree-shake-icons`) e refatorar `OutlinedButton` para `IconButton.outlined` ou glifo SVG estatico | [CONCLUIDO] |
-| **B.2** | Hardening defensivo de Nginx e Rate Limiting na VM Contabo | Adicionar cabecalhos `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` e diretiva `limit_req_zone` no `nginx.conf` da VM | [PENDENTE] |
+| **B.2** | Hardening defensivo de Nginx e Rate Limiting na VM Contabo | Adicionar cabecalhos `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` e diretiva `limit_req_zone` no `nginx.conf` da VM | [CONCLUIDO] |
 | **B.3** | Harmonizacao do Design System com o portal institucional To de Olho | Mapear a paleta de cores e tipografia de `to-de-olho` para os tokens `AppColors` e `AppTypography`, mantendo a identidade visual unificada | [PENDENTE] |
 | **B.4** | Substituicao de icones PWA, splash e eliminacao do logotipo Flutter | Substituir `web/favicon.png`, icones em `web/icons/` e splash do PWA pelo isotipo do projeto, removendo assets do Flutter no boot e visualizador | [CONCLUIDO] |
-| **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [PENDENTE] |
+| **B.5** | Seletor de Ano e Pleito Eleitoral Historico na interface | Expor o seletor de Ano/Pleito (2026, 2024, 2022...) na interface, aproveitando o suporte que o BLoC e a API do TSE ja possuem nativamente | [CONCLUIDO] |
 | **B.6** | Indicador visual assertivo de filtros ativos (badge e destaque) | Adicionar indicador numerico (badge) no botao de filtros e destacar escolhas ativas no modal e na barra superior | [CONCLUIDO] |
 | **B.7** | Navegacao resiliente no PWA e botao explicito de fechar propostas | Prevenir fechamento indevido do PWA ao voltar da proposta de governo, incorporando botao de encerramento e controle de historico com PopScope | [CONCLUIDO] |
 | **B.8** | Reavaliacao ergonomica do botao de atualizacao (Pull-to-Refresh) | Auditar a redundancia do botao fixo de atualizacao na AppBar, substituindo-o por Pull-to-Refresh na listagem | [CONCLUIDO] |
@@ -302,6 +302,24 @@ Toda tarefa deve:
 ---
 
 ### 4.1 Detalhamento Tecnico dos Itens de Refinamento e Usabilidade
+
+#### `[B.2]` Hardening Defensivo de Nginx e Rate Limiting na VM de Borda
+* **Contexto e Problema:** Necessidade de mitigar ataques volumetricos, Clickjacking, MIME-sniffing e scraping abusivo contra o micro-proxy do TSE em ambiente de producao.
+* **Solucao de Engenharia:**
+  1. Configurar `limit_req_zone $binary_remote_addr zone=api_limit:10m rate=30r/s;` no escopo HTTP em [deploy/nginx.conf](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/deploy/nginx.conf).
+  2. Aplicar `limit_req zone=api_limit burst=50 nodelay;` e `limit_req_status 429;` nos endpoints `/quemvotar/api/` e `/quemvotar/api/arquivo/`.
+  3. Desativar versao do servidor com `server_tokens off;`.
+  4. Injetar cabecalhos defensivos: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` e `Strict-Transport-Security`.
+* **Criterios de Aceite:** Servidor Nginx protegido contra estouro de requisicoes com resposta 429 e cabecalhos de seguranca ativos em todas as respostas HTTP.
+
+#### `[B.5]` Seletor de Ano e Pleito Eleitoral Historico na Interface
+* **Contexto e Problema:** A aplicacao possuia suporte nativo no BLoC e na API do TSE para carregar diferentes pleitos (2026, 2024, 2022...), mas a interface nao disponibilizava o dropdown correspondente ao usuario na barra de ferramentas.
+* **Solucao de Engenharia:**
+  1. Expandir [CandidateFilterToolbar](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/widgets/candidate_filter_toolbar.dart) com os parametros `availableElections`, `selectedElection` e callback `onElectionChanged`.
+  2. Implementar leiaute adaptativo: em telas amplas, dispor Pleito, Territorio e Ordenacao em linha; em telas compactas, organizar Pleito e Territorio na primeira linha e Ordenacao na segunda linha com alvos minimos de toque de 48dp.
+  3. Conectar a selecao em [CandidateListPage](file:///c:/Users/pedro/OneDrive/Documentos/projetos/quem-votar/lib/presentation/pages/candidate_list_page.dart) despachando `ElectionFilterElectionChanged` para o BLoC correspondente.
+  4. Cobrir com testes de widget e de fluxo de tela.
+* **Criterios de Aceite:** Eleitor consegue alternar entre pleitos historicos com atualizacao automatica da listagem de candidatos e conformidade WCAG 2.1 AA.
 
 #### `[B.4]` Substituicao Integral de Icones PWA, Splash Screen e Logotipo Padrao do Flutter
 * **Contexto e Problema:** Ao executar a aplicacao web ou instala-la como Progressive Web App (PWA), o icone padrao do framework Flutter e exibido na inicializacao (splash), no cabecalho da janela e ao abrir visualizadores de documentos (propostas de governo).
