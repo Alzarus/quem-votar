@@ -7,11 +7,11 @@ import 'package:quem_votar/presentation/widgets/candidate_active_filter_bar.dart
 void main() {
   Widget buildTestWidget({
     String searchQuery = '',
-    String? selectedParty,
+    Set<String> selectedParties = const {},
     CandidateStatusFilter statusFilter = CandidateStatusFilter.all,
     CandidateAssetsFilter assetsFilter = CandidateAssetsFilter.all,
     VoidCallback? onClearQuery,
-    VoidCallback? onClearParty,
+    ValueChanged<String>? onRemoveParty,
     VoidCallback? onClearStatus,
     VoidCallback? onClearAssets,
     VoidCallback? onClearAll,
@@ -21,11 +21,11 @@ void main() {
       home: Scaffold(
         body: CandidateActiveFilterBar(
           searchQuery: searchQuery,
-          selectedParty: selectedParty,
+          selectedParties: selectedParties,
           statusFilter: statusFilter,
           assetsFilter: assetsFilter,
           onClearQuery: onClearQuery ?? () {},
-          onClearParty: onClearParty ?? () {},
+          onRemoveParty: onRemoveParty ?? (_) {},
           onClearStatus: onClearStatus ?? () {},
           onClearAssets: onClearAssets ?? () {},
           onClearAll: onClearAll ?? () {},
@@ -47,7 +47,7 @@ void main() {
       await tester.pumpWidget(
         buildTestWidget(
           searchQuery: 'lula',
-          selectedParty: 'PT',
+          selectedParties: const {'PT', 'PL'},
           statusFilter: CandidateStatusFilter.eligibleOnly,
           assetsFilter: CandidateAssetsFilter.above1M,
         ),
@@ -56,6 +56,7 @@ void main() {
 
       expect(find.text('Busca: "lula"'), findsOneWidget);
       expect(find.text('Partido: PT'), findsOneWidget);
+      expect(find.text('Partido: PL'), findsOneWidget);
       expect(find.text(CandidateStatusFilter.eligibleOnly.label), findsOneWidget);
       expect(find.text(CandidateAssetsFilter.above1M.label), findsOneWidget);
       expect(find.text('Limpar todos'), findsOneWidget);
@@ -64,13 +65,13 @@ void main() {
     testWidgets('deve acionar callbacks especificos ao clicar no icone de fechar do chip', (
       tester,
     ) async {
-      var clearedParty = false;
+      String? removedParty;
       var clearedAll = false;
 
       await tester.pumpWidget(
         buildTestWidget(
-          selectedParty: 'PL',
-          onClearParty: () => clearedParty = true,
+          selectedParties: const {'PL'},
+          onRemoveParty: (party) => removedParty = party,
           onClearAll: () => clearedAll = true,
         ),
       );
@@ -78,7 +79,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
-      expect(clearedParty, isTrue);
+      expect(removedParty, equals('PL'));
 
       await tester.tap(find.text('Limpar todos'));
       await tester.pumpAndSettle();

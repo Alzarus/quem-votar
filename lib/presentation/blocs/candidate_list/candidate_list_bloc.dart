@@ -25,6 +25,8 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
       transformer: debounceTransformer(const Duration(milliseconds: 300)),
     );
     on<CandidateListPartyFilterChanged>(_onPartyFilterChanged);
+    on<CandidateListPartiesChanged>(_onPartiesChanged);
+    on<CandidateListPartyToggled>(_onPartyToggled);
     on<CandidateListStatusFilterChanged>(_onStatusFilterChanged);
     on<CandidateListAssetsFilterChanged>(_onAssetsFilterChanged);
     on<CandidateListFiltersCleared>(_onFiltersCleared);
@@ -90,7 +92,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterAndSort(
       candidates: rawCandidates,
       query: state.searchQuery,
-      party: state.selectedParty,
+      parties: state.selectedParties,
       statusFilter: state.statusFilter,
       assetsFilter: state.assetsFilter,
       sortOption: state.sortOption,
@@ -138,7 +140,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterAndSort(
       candidates: state.allCandidates,
       query: event.query,
-      party: state.selectedParty,
+      parties: state.selectedParties,
       statusFilter: state.statusFilter,
       assetsFilter: state.assetsFilter,
       sortOption: state.sortOption,
@@ -150,15 +152,46 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     CandidateListPartyFilterChanged event,
     Emitter<CandidateListState> emit,
   ) {
+    final newParties = event.partyAcronym != null ? {event.partyAcronym!} : <String>{};
     final filtered = _filterAndSort(
       candidates: state.allCandidates,
       query: state.searchQuery,
-      party: event.partyAcronym,
+      parties: newParties,
       statusFilter: state.statusFilter,
       assetsFilter: state.assetsFilter,
       sortOption: state.sortOption,
     );
-    emit(state.copyWith(selectedParty: () => event.partyAcronym, filteredCandidates: filtered));
+    emit(state.copyWith(selectedParties: newParties, filteredCandidates: filtered));
+  }
+
+  void _onPartiesChanged(CandidateListPartiesChanged event, Emitter<CandidateListState> emit) {
+    final filtered = _filterAndSort(
+      candidates: state.allCandidates,
+      query: state.searchQuery,
+      parties: event.parties,
+      statusFilter: state.statusFilter,
+      assetsFilter: state.assetsFilter,
+      sortOption: state.sortOption,
+    );
+    emit(state.copyWith(selectedParties: event.parties, filteredCandidates: filtered));
+  }
+
+  void _onPartyToggled(CandidateListPartyToggled event, Emitter<CandidateListState> emit) {
+    final updated = Set<String>.from(state.selectedParties);
+    if (updated.contains(event.partyAcronym)) {
+      updated.remove(event.partyAcronym);
+    } else {
+      updated.add(event.partyAcronym);
+    }
+    final filtered = _filterAndSort(
+      candidates: state.allCandidates,
+      query: state.searchQuery,
+      parties: updated,
+      statusFilter: state.statusFilter,
+      assetsFilter: state.assetsFilter,
+      sortOption: state.sortOption,
+    );
+    emit(state.copyWith(selectedParties: updated, filteredCandidates: filtered));
   }
 
   void _onStatusFilterChanged(
@@ -168,7 +201,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterAndSort(
       candidates: state.allCandidates,
       query: state.searchQuery,
-      party: state.selectedParty,
+      parties: state.selectedParties,
       statusFilter: event.statusFilter,
       assetsFilter: state.assetsFilter,
       sortOption: state.sortOption,
@@ -183,7 +216,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterAndSort(
       candidates: state.allCandidates,
       query: state.searchQuery,
-      party: state.selectedParty,
+      parties: state.selectedParties,
       statusFilter: state.statusFilter,
       assetsFilter: event.assetsFilter,
       sortOption: state.sortOption,
@@ -195,7 +228,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterAndSort(
       candidates: state.allCandidates,
       query: '',
-      party: null,
+      parties: const {},
       statusFilter: CandidateStatusFilter.all,
       assetsFilter: CandidateAssetsFilter.all,
       sortOption: state.sortOption,
@@ -203,7 +236,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     emit(
       state.copyWith(
         searchQuery: '',
-        selectedParty: () => null,
+        selectedParties: const {},
         statusFilter: CandidateStatusFilter.all,
         assetsFilter: CandidateAssetsFilter.all,
         filteredCandidates: filtered,
@@ -222,7 +255,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
   List<CandidateSummary> _filterAndSort({
     required List<CandidateSummary> candidates,
     required String query,
-    required String? party,
+    required Set<String> parties,
     required CandidateStatusFilter statusFilter,
     required CandidateAssetsFilter assetsFilter,
     required CandidateSortOption sortOption,
@@ -230,7 +263,7 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
     final filtered = _filterCandidates(
       candidates: candidates,
       query: query,
-      party: party,
+      parties: parties,
       statusFilter: statusFilter,
       assetsFilter: assetsFilter,
     );
@@ -240,16 +273,16 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
   List<CandidateSummary> _filterCandidates({
     required List<CandidateSummary> candidates,
     required String query,
-    required String? party,
+    required Set<String> parties,
     required CandidateStatusFilter statusFilter,
     required CandidateAssetsFilter assetsFilter,
   }) {
     final normalizedQuery = StringNormalizer.normalize(query);
-    final normalizedParty = party?.trim().toUpperCase();
+    final normalizedParties = parties.map((p) => p.trim().toUpperCase()).toSet();
 
     return candidates
         .where((candidate) {
-          if (!_matchesParty(candidate, normalizedParty)) return false;
+          if (!_matchesParties(candidate, normalizedParties)) return false;
           if (!_matchesStatus(candidate, statusFilter)) return false;
           if (!_matchesAssets(candidate, assetsFilter)) return false;
           if (normalizedQuery.isEmpty) return true;
@@ -258,9 +291,9 @@ class CandidateListBloc extends Bloc<CandidateListEvent, CandidateListState> {
         .toList(growable: false);
   }
 
-  bool _matchesParty(CandidateSummary candidate, String? normalizedParty) {
-    if (normalizedParty == null || normalizedParty.isEmpty) return true;
-    return candidate.partyAcronym.trim().toUpperCase() == normalizedParty;
+  bool _matchesParties(CandidateSummary candidate, Set<String> normalizedParties) {
+    if (normalizedParties.isEmpty) return true;
+    return normalizedParties.contains(candidate.partyAcronym.trim().toUpperCase());
   }
 
   bool _matchesStatus(CandidateSummary candidate, CandidateStatusFilter statusFilter) {

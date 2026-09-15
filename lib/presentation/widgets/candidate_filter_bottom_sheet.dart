@@ -7,13 +7,13 @@ import 'package:quem_votar/presentation/theme/app_typography.dart';
 /// Modal ergonômico acessivel para configuracao de filtros multicriterio.
 ///
 /// Permite ao eleitor filtrar por situacao juridica (Aptos a voto),
-/// faixa de patrimonio declarado oficial e legenda partidaria.
+/// faixa de patrimonio declarado oficial e selecao multipartidaria simultanea.
 class CandidateFilterBottomSheet extends StatelessWidget {
   final List<String> availableParties;
-  final String? selectedParty;
+  final Set<String> selectedParties;
   final CandidateStatusFilter statusFilter;
   final CandidateAssetsFilter assetsFilter;
-  final ValueChanged<String?> onPartyChanged;
+  final ValueChanged<String> onPartyToggled;
   final ValueChanged<CandidateStatusFilter> onStatusChanged;
   final ValueChanged<CandidateAssetsFilter> onAssetsChanged;
   final VoidCallback onClearAll;
@@ -21,10 +21,10 @@ class CandidateFilterBottomSheet extends StatelessWidget {
   const CandidateFilterBottomSheet({
     super.key,
     required this.availableParties,
-    required this.selectedParty,
+    required this.selectedParties,
     required this.statusFilter,
     required this.assetsFilter,
-    required this.onPartyChanged,
+    required this.onPartyToggled,
     required this.onStatusChanged,
     required this.onAssetsChanged,
     required this.onClearAll,
@@ -34,10 +34,10 @@ class CandidateFilterBottomSheet extends StatelessWidget {
   static Future<void> show({
     required BuildContext context,
     required List<String> availableParties,
-    required String? selectedParty,
+    required Set<String> selectedParties,
     required CandidateStatusFilter statusFilter,
     required CandidateAssetsFilter assetsFilter,
-    required ValueChanged<String?> onPartyChanged,
+    required ValueChanged<String> onPartyToggled,
     required ValueChanged<CandidateStatusFilter> onStatusChanged,
     required ValueChanged<CandidateAssetsFilter> onAssetsChanged,
     required VoidCallback onClearAll,
@@ -48,10 +48,10 @@ class CandidateFilterBottomSheet extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (ctx) => CandidateFilterBottomSheet(
         availableParties: availableParties,
-        selectedParty: selectedParty,
+        selectedParties: selectedParties,
         statusFilter: statusFilter,
         assetsFilter: assetsFilter,
-        onPartyChanged: onPartyChanged,
+        onPartyToggled: onPartyToggled,
         onStatusChanged: onStatusChanged,
         onAssetsChanged: onAssetsChanged,
         onClearAll: onClearAll,
@@ -81,31 +81,33 @@ class CandidateFilterBottomSheet extends StatelessWidget {
             _buildDragHandle(semantic),
             _buildHeader(context, semantic),
             Divider(color: semantic.borderSubtle, height: 1.0),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: AppSpacing.edgeInsetsMd,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle('Situação Jurídica do Registro', semantic),
-                    const SizedBox(height: AppSpacing.spaceXs),
-                    _buildStatusOptions(semantic),
-                    const SizedBox(height: AppSpacing.spaceMd),
-                    _buildSectionTitle('Patrimônio Declarado no TSE', semantic),
-                    const SizedBox(height: AppSpacing.spaceXs),
-                    _buildAssetsOptions(semantic),
-                    const SizedBox(height: AppSpacing.spaceMd),
-                    _buildSectionTitle('Partido / Federação Partidária', semantic),
-                    const SizedBox(height: AppSpacing.spaceXs),
-                    _buildPartyOptions(semantic),
-                  ],
-                ),
-              ),
-            ),
+            Flexible(child: _buildScrollableBody(semantic)),
             Divider(color: semantic.borderSubtle, height: 1.0),
             _buildFooter(context, semantic),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildScrollableBody(AppSemanticColors semantic) {
+    return SingleChildScrollView(
+      padding: AppSpacing.edgeInsetsMd,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Situação Jurídica do Registro', semantic),
+          const SizedBox(height: AppSpacing.spaceXs),
+          _buildStatusOptions(semantic),
+          const SizedBox(height: AppSpacing.spaceMd),
+          _buildSectionTitle('Patrimônio Declarado no TSE', semantic),
+          const SizedBox(height: AppSpacing.spaceXs),
+          _buildAssetsOptions(semantic),
+          const SizedBox(height: AppSpacing.spaceMd),
+          _buildSectionTitle('Partido / Federação Partidária', semantic),
+          const SizedBox(height: AppSpacing.spaceXs),
+          _buildPartyOptions(semantic),
+        ],
       ),
     );
   }
@@ -201,23 +203,41 @@ class CandidateFilterBottomSheet extends StatelessWidget {
   }
 
   Widget _buildPartyOptions(AppSemanticColors semantic) {
-    return DropdownButtonFormField<String?>(
-      initialValue: selectedParty,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: 'Selecionar Legenda Partidária',
-        labelStyle: TextStyle(color: semantic.textSecondary),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-        filled: true,
-        fillColor: semantic.surfaceCard,
-      ),
-      items: [
-        const DropdownMenuItem<String?>(value: null, child: Text('Todos os Partidos e Federações')),
-        ...availableParties.map(
-          (party) => DropdownMenuItem<String?>(value: party, child: Text(party)),
+    if (availableParties.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spaceXs),
+        child: Text(
+          'Nenhuma legenda partidária disponível para esta seleção.',
+          style: AppTypography.bodyMedium.copyWith(color: semantic.textSecondary),
         ),
-      ],
-      onChanged: (newParty) => onPartyChanged(newParty),
+      );
+    }
+
+    return Wrap(
+      spacing: AppSpacing.spaceXs,
+      runSpacing: AppSpacing.spaceXs,
+      children: availableParties.map((party) {
+        final isSelected = selectedParties.contains(party);
+        return FilterChip(
+          avatar: isSelected ? Icon(Icons.check, size: 16.0, color: semantic.surfaceCard) : null,
+          label: Text(
+            party,
+            style: TextStyle(
+              color: isSelected ? semantic.surfaceCard : semantic.textPrimary,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          selected: isSelected,
+          showCheckmark: false,
+          selectedColor: semantic.brandPrimary,
+          backgroundColor: semantic.surfaceCard,
+          side: BorderSide(
+            color: isSelected ? semantic.brandPrimary : semantic.borderSubtle,
+            width: isSelected ? 1.6 : 1.0,
+          ),
+          onSelected: (_) => onPartyToggled(party),
+        );
+      }).toList(),
     );
   }
 
@@ -228,6 +248,7 @@ class CandidateFilterBottomSheet extends StatelessWidget {
     required AppSemanticColors semantic,
   }) {
     return ChoiceChip(
+      avatar: isSelected ? Icon(Icons.check, size: 16.0, color: semantic.surfaceCard) : null,
       label: Text(
         label,
         style: TextStyle(
@@ -238,12 +259,20 @@ class CandidateFilterBottomSheet extends StatelessWidget {
       selected: isSelected,
       selectedColor: semantic.brandPrimary,
       backgroundColor: semantic.surfaceCard,
-      side: BorderSide(color: isSelected ? semantic.brandPrimary : semantic.borderSubtle),
+      side: BorderSide(
+        color: isSelected ? semantic.brandPrimary : semantic.borderSubtle,
+        width: isSelected ? 1.6 : 1.0,
+      ),
       onSelected: (_) => onSelected(),
     );
   }
 
   Widget _buildFooter(BuildContext context, AppSemanticColors semantic) {
+    final totalCount = _calcTotalCriteria();
+    final buttonLabel = totalCount > 0
+        ? 'Concluir e Ver Candidaturas ($totalCount)'
+        : 'Concluir e Ver Candidaturas';
+
     return Padding(
       padding: AppSpacing.edgeInsetsMd,
       child: SizedBox(
@@ -255,12 +284,17 @@ class CandidateFilterBottomSheet extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
           ),
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text(
-            'Concluir e Ver Candidaturas',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
+          child: Text(buttonLabel, style: const TextStyle(fontWeight: FontWeight.w700)),
         ),
       ),
     );
+  }
+
+  int _calcTotalCriteria() {
+    var count = 0;
+    count += selectedParties.length;
+    if (statusFilter != CandidateStatusFilter.all) count++;
+    if (assetsFilter != CandidateAssetsFilter.all) count++;
+    return count;
   }
 }

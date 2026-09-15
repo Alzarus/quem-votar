@@ -213,7 +213,7 @@ void main() {
       expect(backCalled, isTrue);
     });
 
-    testWidgets('deve despachar CandidateDetailRefreshRequested ao clicar em recarregar', (
+    testWidgets('deve conter RefreshIndicator para pull-to-refresh na ficha do candidato', (
       tester,
     ) async {
       when(() => mockDetailBloc.state).thenReturn(
@@ -228,12 +228,8 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final refreshButton = find.byIcon(Icons.refresh);
-      expect(refreshButton, findsOneWidget);
-      await tester.tap(refreshButton);
-      await tester.pump();
-
-      verify(() => mockDetailBloc.add(const CandidateDetailRefreshRequested())).called(1);
+      final refreshIndicator = find.byType(RefreshIndicator);
+      expect(refreshIndicator, findsOneWidget);
     });
 
     testWidgets('deve despachar CandidateDetailRefreshRequested ao clicar no retry de erro', (

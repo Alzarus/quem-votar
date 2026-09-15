@@ -7,10 +7,10 @@ import 'package:quem_votar/presentation/widgets/candidate_filter_bottom_sheet.da
 void main() {
   Widget buildTestWidget({
     List<String> availableParties = const ['PL', 'PT', 'UNIÃO'],
-    String? selectedParty,
+    Set<String> selectedParties = const {},
     CandidateStatusFilter statusFilter = CandidateStatusFilter.all,
     CandidateAssetsFilter assetsFilter = CandidateAssetsFilter.all,
-    ValueChanged<String?>? onPartyChanged,
+    ValueChanged<String>? onPartyToggled,
     ValueChanged<CandidateStatusFilter>? onStatusChanged,
     ValueChanged<CandidateAssetsFilter>? onAssetsChanged,
     VoidCallback? onClearAll,
@@ -20,10 +20,10 @@ void main() {
       home: Scaffold(
         body: CandidateFilterBottomSheet(
           availableParties: availableParties,
-          selectedParty: selectedParty,
+          selectedParties: selectedParties,
           statusFilter: statusFilter,
           assetsFilter: assetsFilter,
-          onPartyChanged: onPartyChanged ?? (_) {},
+          onPartyToggled: onPartyToggled ?? (_) {},
           onStatusChanged: onStatusChanged ?? (_) {},
           onAssetsChanged: onAssetsChanged ?? (_) {},
           onClearAll: onClearAll ?? () {},
@@ -44,6 +44,21 @@ void main() {
       expect(find.text('Concluir e Ver Candidaturas'), findsOneWidget);
     });
 
+    testWidgets('deve exibir icone de confirmacao nos chips selecionados e contador no rodape', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestWidget(
+          selectedParties: const {'PT', 'PL'},
+          statusFilter: CandidateStatusFilter.eligibleOnly,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.check), findsAtLeastNWidgets(3));
+      expect(find.text('Concluir e Ver Candidaturas (3)'), findsOneWidget);
+    });
+
     testWidgets('deve disparar onStatusChanged ao selecionar chip de status', (tester) async {
       CandidateStatusFilter? updatedStatus;
 
@@ -54,6 +69,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(updatedStatus, equals(CandidateStatusFilter.eligibleOnly));
+    });
+
+    testWidgets('deve disparar onPartyToggled ao clicar em FilterChip partidario', (tester) async {
+      String? toggledParty;
+
+      await tester.pumpWidget(buildTestWidget(onPartyToggled: (party) => toggledParty = party));
+      await tester.pumpAndSettle();
+
+      final partyFinder = find.text('PT');
+      await tester.ensureVisible(partyFinder);
+      await tester.pumpAndSettle();
+
+      await tester.tap(partyFinder);
+      await tester.pumpAndSettle();
+
+      expect(toggledParty, equals('PT'));
     });
 
     testWidgets('deve disparar onAssetsChanged ao selecionar chip de patrimonio', (tester) async {

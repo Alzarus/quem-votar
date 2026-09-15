@@ -44,11 +44,31 @@ final class CandidateListSearchQueryChanged extends CandidateListEvent {
   List<Object?> get props => [query];
 }
 
-/// Notifica alteracao ou remocao no filtro por legenda partidaria.
+/// Notifica alteracao ou remocao no filtro por legenda partidaria (compatibilidade).
 final class CandidateListPartyFilterChanged extends CandidateListEvent {
   final String? partyAcronym;
 
   const CandidateListPartyFilterChanged(this.partyAcronym);
+
+  @override
+  List<Object?> get props => [partyAcronym];
+}
+
+/// Notifica substituicao integral do conjunto de legendas selecionadas.
+final class CandidateListPartiesChanged extends CandidateListEvent {
+  final Set<String> parties;
+
+  const CandidateListPartiesChanged(this.parties);
+
+  @override
+  List<Object?> get props => [parties];
+}
+
+/// Notifica alternancia (inclusao ou remocao) de uma legenda partidaria especifica.
+final class CandidateListPartyToggled extends CandidateListEvent {
+  final String partyAcronym;
+
+  const CandidateListPartyToggled(this.partyAcronym);
 
   @override
   List<Object?> get props => [partyAcronym];

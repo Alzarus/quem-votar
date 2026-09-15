@@ -120,23 +120,6 @@ class _CandidateListView extends StatelessWidget {
         preferredSize: const Size.fromHeight(1.0),
         child: Container(color: semantic.borderSubtle, height: 1.0),
       ),
-      actions: [_buildRefreshActionButton(context, semantic)],
-    );
-  }
-
-  Widget _buildRefreshActionButton(BuildContext context, AppSemanticColors semantic) {
-    return Semantics(
-      button: true,
-      label: 'Atualizar dados eleitorais do cartório oficial',
-      child: SizedBox(
-        width: 48.0,
-        height: 48.0,
-        child: IconButton(
-          icon: Icon(Icons.refresh, color: semantic.brandPrimary),
-          tooltip: 'Atualizar dados',
-          onPressed: () => _triggerRefresh(context),
-        ),
-      ),
     );
   }
 
@@ -204,8 +187,8 @@ class _CandidateListView extends StatelessWidget {
 
   Widget _buildFilterModalButton(BuildContext context, CandidateListState state) {
     final semantic = context.semanticColors;
-    final hasFilters = state.hasActiveFilters;
-    final count = state.activeFiltersCount;
+    final hasFilters = state.hasModalFilters;
+    final count = state.modalFiltersCount;
     final semanticLabel =
         'Abrir painel de filtros multicritério. ${hasFilters ? '$count filtros ativos.' : 'Nenhum filtro ativo.'}';
 
@@ -256,10 +239,10 @@ class _CandidateListView extends StatelessWidget {
     CandidateFilterBottomSheet.show(
       context: context,
       availableParties: state.availableParties,
-      selectedParty: state.selectedParty,
+      selectedParties: state.selectedParties,
       statusFilter: state.statusFilter,
       assetsFilter: state.assetsFilter,
-      onPartyChanged: (party) => listBloc.add(CandidateListPartyFilterChanged(party)),
+      onPartyToggled: (party) => listBloc.add(CandidateListPartyToggled(party)),
       onStatusChanged: (status) => listBloc.add(CandidateListStatusFilterChanged(status)),
       onAssetsChanged: (assets) => listBloc.add(CandidateListAssetsFilterChanged(assets)),
       onClearAll: () => listBloc.add(const CandidateListFiltersCleared()),
@@ -270,7 +253,7 @@ class _CandidateListView extends StatelessWidget {
     return BlocBuilder<CandidateListBloc, CandidateListState>(
       buildWhen: (prev, curr) =>
           prev.searchQuery != curr.searchQuery ||
-          prev.selectedParty != curr.selectedParty ||
+          prev.selectedParties != curr.selectedParties ||
           prev.statusFilter != curr.statusFilter ||
           prev.assetsFilter != curr.assetsFilter,
       builder: (context, state) {
@@ -280,11 +263,11 @@ class _CandidateListView extends StatelessWidget {
         final bloc = context.read<CandidateListBloc>();
         return CandidateActiveFilterBar(
           searchQuery: state.searchQuery,
-          selectedParty: state.selectedParty,
+          selectedParties: state.selectedParties,
           statusFilter: state.statusFilter,
           assetsFilter: state.assetsFilter,
           onClearQuery: () => bloc.add(const CandidateListSearchQueryChanged('')),
-          onClearParty: () => bloc.add(const CandidateListPartyFilterChanged(null)),
+          onRemoveParty: (party) => bloc.add(CandidateListPartyToggled(party)),
           onClearStatus: () =>
               bloc.add(const CandidateListStatusFilterChanged(CandidateStatusFilter.all)),
           onClearAssets: () =>
@@ -411,7 +394,6 @@ class _CandidateListView extends StatelessWidget {
 
   void _clearFilters(BuildContext context) {
     context.read<CandidateListBloc>().add(const CandidateListSearchQueryChanged(''));
-    context.read<CandidateListBloc>().add(const CandidateListPartyFilterChanged(null));
     context.read<CandidateListBloc>().add(const CandidateListFiltersCleared());
   }
 

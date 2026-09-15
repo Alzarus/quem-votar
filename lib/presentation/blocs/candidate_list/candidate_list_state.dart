@@ -43,7 +43,7 @@ class CandidateListState extends Equatable {
   final List<CandidateSummary> allCandidates;
   final List<CandidateSummary> filteredCandidates;
   final String searchQuery;
-  final String? selectedParty;
+  final Set<String> selectedParties;
   final CandidateStatusFilter statusFilter;
   final CandidateAssetsFilter assetsFilter;
   final CandidateSortOption sortOption;
@@ -61,7 +61,7 @@ class CandidateListState extends Equatable {
     required this.allCandidates,
     required this.filteredCandidates,
     required this.searchQuery,
-    this.selectedParty,
+    this.selectedParties = const {},
     this.statusFilter = CandidateStatusFilter.all,
     this.assetsFilter = CandidateAssetsFilter.all,
     required this.sortOption,
@@ -79,7 +79,7 @@ class CandidateListState extends Equatable {
     allCandidates: [],
     filteredCandidates: [],
     searchQuery: '',
-    selectedParty: null,
+    selectedParties: {},
     statusFilter: CandidateStatusFilter.all,
     assetsFilter: CandidateAssetsFilter.all,
     sortOption: CandidateSortOption.alphabetical,
@@ -87,12 +87,16 @@ class CandidateListState extends Equatable {
     isRefreshing: false,
   );
 
+  /// Getter de compatibilidade regressiva para consultas de legenda unica.
+  String? get selectedParty => selectedParties.length == 1 ? selectedParties.first : null;
+
   /// Cria copia imutavel com substituicao parametrica segura.
   CandidateListState copyWith({
     CandidateListStatus? status,
     List<CandidateSummary>? allCandidates,
     List<CandidateSummary>? filteredCandidates,
     String? searchQuery,
+    Set<String>? selectedParties,
     String? Function()? selectedParty,
     CandidateStatusFilter? statusFilter,
     CandidateAssetsFilter? assetsFilter,
@@ -104,12 +108,14 @@ class CandidateListState extends Equatable {
     int? activeElectionId,
     int? activeRoleCode,
   }) {
+    final resolvedParties = _resolveCopyParties(selectedParties, selectedParty);
+
     return CandidateListState(
       status: status ?? this.status,
       allCandidates: allCandidates ?? this.allCandidates,
       filteredCandidates: filteredCandidates ?? this.filteredCandidates,
       searchQuery: searchQuery ?? this.searchQuery,
-      selectedParty: selectedParty != null ? selectedParty() : this.selectedParty,
+      selectedParties: resolvedParties,
       statusFilter: statusFilter ?? this.statusFilter,
       assetsFilter: assetsFilter ?? this.assetsFilter,
       sortOption: sortOption ?? this.sortOption,
@@ -122,15 +128,29 @@ class CandidateListState extends Equatable {
     );
   }
 
-  /// Quantidade absoluta de criterios de filtro aplicados.
-  int get activeFiltersCount {
+  Set<String> _resolveCopyParties(Set<String>? newParties, String? Function()? legacyParty) {
+    if (newParties != null) return newParties;
+    if (legacyParty != null) {
+      final legacyVal = legacyParty();
+      return legacyVal != null ? {legacyVal} : const {};
+    }
+    return selectedParties;
+  }
+
+  /// Quantidade de filtros configurados no modal de criterios.
+  int get modalFiltersCount {
     var count = 0;
-    if (searchQuery.isNotEmpty) count++;
-    if (selectedParty != null) count++;
+    count += selectedParties.length;
     if (statusFilter != CandidateStatusFilter.all) count++;
     if (assetsFilter != CandidateAssetsFilter.all) count++;
     return count;
   }
+
+  /// Quantidade absoluta de criterios de filtro aplicados (incluindo busca textual).
+  int get activeFiltersCount => modalFiltersCount + (searchQuery.trim().isNotEmpty ? 1 : 0);
+
+  /// Indica se ha filtros configurados no modal de criterios.
+  bool get hasModalFilters => modalFiltersCount > 0;
 
   /// Indica se ha filtros textuais, de legenda, status ou patrimonio aplicados.
   bool get hasActiveFilters => activeFiltersCount > 0;
@@ -161,7 +181,7 @@ class CandidateListState extends Equatable {
     allCandidates,
     filteredCandidates,
     searchQuery,
-    selectedParty,
+    selectedParties,
     statusFilter,
     assetsFilter,
     sortOption,

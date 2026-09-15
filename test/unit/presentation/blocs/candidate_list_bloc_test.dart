@@ -95,13 +95,17 @@ void main() {
         allCandidates: mockCandidates,
         filteredCandidates: [candidateA],
         searchQuery: 'Lula',
-        selectedParty: 'PT',
+        selectedParties: {'PT'},
         sortOption: CandidateSortOption.alphabetical,
       );
 
       expect(state.totalCount, equals(3));
       expect(state.filteredCount, equals(1));
       expect(state.hasActiveFilters, isTrue);
+      expect(state.hasModalFilters, isTrue);
+      expect(state.modalFiltersCount, equals(1));
+      expect(state.activeFiltersCount, equals(2));
+      expect(state.selectedParty, equals('PT'));
       expect(state.hasNoResults, isFalse);
       expect(state.availableParties, equals(['PDT', 'PL', 'PT']));
     });
@@ -283,6 +287,51 @@ void main() {
     );
 
     blocTest<CandidateListBloc, CandidateListState>(
+      'deve filtrar candidatos por multiplas legendas simultaneas',
+      build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
+      seed: () => const CandidateListState(
+        status: CandidateListStatus.success,
+        allCandidates: mockCandidates,
+        filteredCandidates: mockCandidates,
+        searchQuery: '',
+        sortOption: CandidateSortOption.alphabetical,
+      ),
+      act: (bloc) => bloc.add(const CandidateListPartiesChanged({'PT', 'PL'})),
+      expect: () => [
+        isA<CandidateListState>()
+            .having((s) => s.selectedParties, 'parties', {'PT', 'PL'})
+            .having((s) => s.filteredCount, 'filteredCount', 2)
+            .having(
+              (s) => s.filteredCandidates.map((c) => c.partyAcronym).toSet(),
+              'siglas filtradas',
+              {'PT', 'PL'},
+            ),
+      ],
+    );
+
+    blocTest<CandidateListBloc, CandidateListState>(
+      'deve alternar inclusao e exclusao de legenda via CandidateListPartyToggled',
+      build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
+      seed: () => const CandidateListState(
+        status: CandidateListStatus.success,
+        allCandidates: mockCandidates,
+        filteredCandidates: mockCandidates,
+        searchQuery: '',
+        sortOption: CandidateSortOption.alphabetical,
+      ),
+      act: (bloc) {
+        bloc.add(const CandidateListPartyToggled('PT'));
+        bloc.add(const CandidateListPartyToggled('PL'));
+        bloc.add(const CandidateListPartyToggled('PT')); // remove PT
+      },
+      expect: () => [
+        isA<CandidateListState>().having((s) => s.selectedParties, 'somente PT', {'PT'}),
+        isA<CandidateListState>().having((s) => s.selectedParties, 'PT e PL', {'PT', 'PL'}),
+        isA<CandidateListState>().having((s) => s.selectedParties, 'somente PL', {'PL'}),
+      ],
+    );
+
+    blocTest<CandidateListBloc, CandidateListState>(
       'deve reordenar candidatos por numero eleitoral crescente',
       build: () => CandidateListBloc(getCandidatesListUseCase: mockUseCase),
       seed: () => const CandidateListState(
@@ -391,7 +440,7 @@ void main() {
         allCandidates: mockCandidates,
         filteredCandidates: [candidateA],
         searchQuery: 'Lula',
-        selectedParty: 'PT',
+        selectedParties: {'PT'},
         statusFilter: CandidateStatusFilter.eligibleOnly,
         assetsFilter: CandidateAssetsFilter.above1M,
         sortOption: CandidateSortOption.alphabetical,
@@ -401,6 +450,7 @@ void main() {
         isA<CandidateListState>()
             .having((s) => s.searchQuery, 'searchQuery limpa', '')
             .having((s) => s.selectedParty, 'partido limpo', isNull)
+            .having((s) => s.selectedParties, 'partidos limpos', isEmpty)
             .having((s) => s.statusFilter, 'status limpo', CandidateStatusFilter.all)
             .having((s) => s.assetsFilter, 'patrimonio limpo', CandidateAssetsFilter.all)
             .having((s) => s.filteredCount, 'todos retornados', 3),

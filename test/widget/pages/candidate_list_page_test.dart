@@ -110,6 +110,8 @@ void main() {
     registerFallbackValue(const CandidateListSearchQueryChanged(''));
     registerFallbackValue(const CandidateListSortOptionChanged(CandidateSortOption.alphabetical));
     registerFallbackValue(const CandidateListPartyFilterChanged(null));
+    registerFallbackValue(const CandidateListPartyToggled(''));
+    registerFallbackValue(const CandidateListPartiesChanged({}));
   });
 
   setUp(() {
@@ -278,34 +280,43 @@ void main() {
       verify(() => mockListBloc.add(const CandidateListSearchQueryChanged('Lula'))).called(1);
     });
 
-    testWidgets('deve despachar evento de refresh ao clicar no botao da AppBar', (tester) async {
+    testWidgets('deve conter RefreshIndicator para pull-to-refresh na listagem', (tester) async {
       await tester.pumpWidget(buildPage());
       await tester.pumpAndSettle();
 
-      final refreshBtn = find.byTooltip('Atualizar dados');
-      expect(refreshBtn, findsOneWidget);
-
-      await tester.tap(refreshBtn);
-      await tester.pump();
-
-      verify(() => mockListBloc.add(any())).called(greaterThanOrEqualTo(1));
+      final refreshIndicator = find.byType(RefreshIndicator);
+      expect(refreshIndicator, findsOneWidget);
     });
 
-    testWidgets('deve exibir botao de filtros com icone filter_alt_outlined e tooltip', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildPage());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'deve exibir botao de filtros com icone filter_alt_outlined, tooltip e badge numerico',
+      (tester) async {
+        when(() => mockListBloc.state).thenReturn(
+          const CandidateListState(
+            status: CandidateListStatus.success,
+            allCandidates: mockCandidates,
+            filteredCandidates: mockCandidates,
+            searchQuery: '',
+            selectedParties: {'PT', 'PL'},
+            statusFilter: CandidateStatusFilter.eligibleOnly,
+            sortOption: CandidateSortOption.alphabetical,
+          ),
+        );
 
-      final filterBtn = find.byTooltip('Filtrar candidaturas');
-      expect(filterBtn, findsOneWidget);
-      expect(find.byIcon(Icons.filter_alt_outlined), findsOneWidget);
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
 
-      await tester.tap(filterBtn);
-      await tester.pumpAndSettle();
+        final filterBtn = find.byTooltip('Filtrar candidaturas');
+        expect(filterBtn, findsOneWidget);
+        expect(find.byIcon(Icons.filter_alt_outlined), findsOneWidget);
+        expect(find.text('3'), findsOneWidget); // 2 parties + 1 status = 3 modal filters
 
-      expect(find.text('Filtros de Candidaturas'), findsOneWidget);
-    });
+        await tester.tap(filterBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Filtros de Candidaturas'), findsOneWidget);
+      },
+    );
   });
 
   group('CandidateListPage - Acessibilidade WCAG 2.1 AA', () {
@@ -322,12 +333,12 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('alvo de toque do botao de refresh deve ser no minimo 48x48dp', (tester) async {
+    testWidgets('alvo de toque do botao de filtros deve ser no minimo 48x48dp', (tester) async {
       await tester.pumpWidget(buildPage());
       await tester.pumpAndSettle();
 
-      final refreshBtnFinder = find.byTooltip('Atualizar dados');
-      final size = tester.getSize(refreshBtnFinder);
+      final filterBtnFinder = find.byTooltip('Filtrar candidaturas');
+      final size = tester.getSize(filterBtnFinder);
 
       expect(size.width, greaterThanOrEqualTo(48.0));
       expect(size.height, greaterThanOrEqualTo(48.0));

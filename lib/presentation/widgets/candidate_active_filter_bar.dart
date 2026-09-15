@@ -10,11 +10,11 @@ import 'package:quem_votar/presentation/theme/app_typography.dart';
 /// permitindo ao eleitor remover criterios individuais ou limpar todos em 1 acao.
 class CandidateActiveFilterBar extends StatelessWidget {
   final String searchQuery;
-  final String? selectedParty;
+  final Set<String> selectedParties;
   final CandidateStatusFilter statusFilter;
   final CandidateAssetsFilter assetsFilter;
   final VoidCallback onClearQuery;
-  final VoidCallback onClearParty;
+  final ValueChanged<String> onRemoveParty;
   final VoidCallback onClearStatus;
   final VoidCallback onClearAssets;
   final VoidCallback onClearAll;
@@ -22,11 +22,11 @@ class CandidateActiveFilterBar extends StatelessWidget {
   const CandidateActiveFilterBar({
     super.key,
     required this.searchQuery,
-    required this.selectedParty,
+    required this.selectedParties,
     required this.statusFilter,
     required this.assetsFilter,
     required this.onClearQuery,
-    required this.onClearParty,
+    required this.onRemoveParty,
     required this.onClearStatus,
     required this.onClearAssets,
     required this.onClearAll,
@@ -66,12 +66,13 @@ class CandidateActiveFilterBar extends StatelessWidget {
       );
     }
 
-    if (selectedParty != null) {
+    final sortedParties = selectedParties.toList()..sort();
+    for (final party in sortedParties) {
       list.add(
         _buildChip(
-          label: 'Partido: $selectedParty',
-          semanticLabel: 'Filtro por partido $selectedParty. Toque para remover.',
-          onRemove: onClearParty,
+          label: 'Partido: $party',
+          semanticLabel: 'Filtro por partido $party. Toque para remover.',
+          onRemove: () => onRemoveParty(party),
           semantic: semantic,
         ),
       );

@@ -72,7 +72,7 @@ class _CandidateDetailView extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 1000.0),
           child: BlocBuilder<CandidateDetailBloc, CandidateDetailState>(
             builder: (context, state) {
-              return _buildBodyForState(context, state);
+              return _buildBodyForState(context, state, semantic);
             },
           ),
         ),
@@ -90,7 +90,7 @@ class _CandidateDetailView extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-      actions: [_buildRefreshButton(context, semantic)],
+      actions: const [],
       elevation: 0.0,
       backgroundColor: semantic.surfaceBackground,
     );
@@ -110,38 +110,11 @@ class _CandidateDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildRefreshButton(BuildContext context, AppSemanticColors semantic) {
-    return BlocBuilder<CandidateDetailBloc, CandidateDetailState>(
-      builder: (context, state) {
-        if (state.isRefreshing) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spaceMd),
-              child: SizedBox(
-                width: 20.0,
-                height: 20.0,
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: semantic.brandPrimary),
-              ),
-            ),
-          );
-        }
-
-        return Semantics(
-          button: true,
-          label: 'Recarregar dados oficiais do candidato',
-          child: ConstrainedBox(
-            constraints: AppTouchTarget.minConstraints,
-            child: IconButton(
-              icon: Icon(Icons.refresh, color: semantic.textPrimary),
-              onPressed: () => _handleRefresh(context),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBodyForState(BuildContext context, CandidateDetailState state) {
+  Widget _buildBodyForState(
+    BuildContext context,
+    CandidateDetailState state,
+    AppSemanticColors semantic,
+  ) {
     if (state.status == CandidateDetailStatus.loading && state.candidateDetail == null) {
       return const CandidateDetailLoadingView();
     }
@@ -153,7 +126,7 @@ class _CandidateDetailView extends StatelessWidget {
       );
     }
     if (state.candidateDetail != null) {
-      return _buildDetailContent(context, state, state.candidateDetail!);
+      return _buildDetailContent(context, state, state.candidateDetail!, semantic);
     }
     return const CandidateDetailLoadingView();
   }
@@ -162,36 +135,42 @@ class _CandidateDetailView extends StatelessWidget {
     BuildContext context,
     CandidateDetailState state,
     CandidateDetail detail,
+    AppSemanticColors semantic,
   ) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.spaceMd,
-        vertical: AppSpacing.spaceSm,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CandidateDetailHeader(candidateDetail: detail),
-          const SizedBox(height: AppSpacing.spaceSm),
-          CandidateDetailProposalCard(
-            proposalDocumentUrl: detail.proposalDocumentUrl,
-            onOpenProposal: () => _handleOpenProposal(context, detail.proposalDocumentUrl),
-          ),
-          const SizedBox(height: AppSpacing.spaceSm),
-          CandidateDetailCivilData(candidateDetail: detail),
-          if (state.hasRunningMates) ...[
+    return RefreshIndicator(
+      color: semantic.brandPrimary,
+      onRefresh: () async => _handleRefresh(context),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.spaceMd,
+          vertical: AppSpacing.spaceSm,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CandidateDetailHeader(candidateDetail: detail),
             const SizedBox(height: AppSpacing.spaceSm),
-            CandidateDetailRunningMates(runningMates: detail.runningMates),
+            CandidateDetailProposalCard(
+              proposalDocumentUrl: detail.proposalDocumentUrl,
+              onOpenProposal: () => _handleOpenProposal(context, detail.proposalDocumentUrl),
+            ),
+            const SizedBox(height: AppSpacing.spaceSm),
+            CandidateDetailCivilData(candidateDetail: detail),
+            if (state.hasRunningMates) ...[
+              const SizedBox(height: AppSpacing.spaceSm),
+              CandidateDetailRunningMates(runningMates: detail.runningMates),
+            ],
+            const SizedBox(height: AppSpacing.spaceSm),
+            CandidateDetailAssetsSection(
+              assets: state.sortedAssets,
+              totalAmount: state.totalAssetsAmount,
+              activeSortOption: state.assetSortOption,
+              onSortOptionChanged: (option) => _handleSortOptionChanged(context, option),
+            ),
+            const SizedBox(height: AppSpacing.spaceLg),
           ],
-          const SizedBox(height: AppSpacing.spaceSm),
-          CandidateDetailAssetsSection(
-            assets: state.sortedAssets,
-            totalAmount: state.totalAssetsAmount,
-            activeSortOption: state.assetSortOption,
-            onSortOptionChanged: (option) => _handleSortOptionChanged(context, option),
-          ),
-          const SizedBox(height: AppSpacing.spaceLg),
-        ],
+        ),
       ),
     );
   }
